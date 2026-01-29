@@ -1,52 +1,105 @@
-# Wix Content Extractor
+# Veterans Sportsmens Association (VSA)
 
-Extract clean content elements from Wix-generated HTML, removing all the Wix framework code.
+Veterans Serving Veterans — website for the Veterans Sportsmens Association.
 
-## Usage
+## Project structure
 
-### Option 1: Extract from a file
+- **frontend/** — React (Vite) app: UI, components, and client-side logic
+- **backend/** — Node.js/Express API: authentication, user management, and content management
+
+## Frontend
+
+Built with **React 19** and **Vite 7**.
+
+### Run locally
+
 ```bash
-python3 extract_content.py index.html
+cd frontend
+npm install
+npm run dev
 ```
 
-### Option 2: Extract from a URL
+Then open http://localhost:5173 (or the URL Vite prints).
+
+### Build for production
+
 ```bash
-python3 extract_content.py --url https://your-wix-site.com
-# or
-python3 extract_content.py https://your-wix-site.com
+cd frontend
+npm run build
 ```
 
-### Option 3: Paste content directly
-If you have HTML content, save it to a file first, then run:
-```bash
-python3 extract_content.py your-file.html
+Output is in `frontend/dist/`.
+
+### Frontend structure
+
+```
+frontend/
+├── public/
+├── src/
+│   ├── components/    # UI components
+│   │   ├── Nav.jsx
+│   │   ├── Hero.jsx
+│   │   ├── About.jsx
+│   │   ├── Programs.jsx
+│   │   ├── Events.jsx
+│   │   ├── News.jsx
+│   │   ├── Gallery.jsx
+│   │   ├── Contact.jsx
+│   │   ├── Footer.jsx
+│   │   └── index.js
+│   ├── data/          # Static data (events, programs, news, gallery)
+│   │   ├── events.js
+│   │   ├── programs.js
+│   │   ├── news.js
+│   │   └── gallery.js
+│   ├── App.jsx
+│   ├── App.css
+│   ├── index.css      # Global styles & CSS variables
+│   └── main.jsx
+├── index.html
+├── package.json
+└── vite.config.js
 ```
 
-## Output
+## Backend
 
-The script creates `extracted_content.html` with:
-- Clean, readable HTML structure
-- All text content extracted
-- Images (if any)
-- No Wix framework code
-- No scripts or tracking code
+Node.js/Express API server with authentication and content management.
 
-## What gets extracted
+### Setup
 
-- Headings (h1-h6)
-- Paragraphs
-- Lists
-- Links
-- Images
-- Table content
-- Other text elements
+1. Install dependencies:
+```bash
+cd backend
+npm install
+```
 
-## What gets removed
+2. Copy `.env.example` to `.env`:
+```bash
+cp .env.example .env
+```
 
-- Wix-specific classes and IDs
-- Data attributes
-- Script tags
-- Style tags
-- Framework code
-- Tracking code
-# vsa
+3. Start the server:
+```bash
+npm start
+# or for development:
+npm run dev
+```
+
+The API will run on `http://localhost:3001` by default.
+
+### Default Admin Account
+
+- Email: `admin@vsa.org`
+- Password: `admin123`
+
+**⚠️ Change this in production!**
+
+### API Endpoints
+
+See `backend/README.md` for full API documentation.
+
+## Frontend-Backend Connection
+
+1. Copy `frontend/.env.example` to `frontend/.env`
+2. Set `VITE_API_URL=http://localhost:3001/api` (or your backend URL)
+3. The frontend will automatically connect to the backend API

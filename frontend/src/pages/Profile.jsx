@@ -1,0 +1,648 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import Nav from "../components/Nav";
+import Footer from "../components/Footer";
+import { useAuth } from "../contexts/AuthContext";
+
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+
+function Profile() {
+  const { user, token, logout, refreshUser, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
+  const [resendingEmail, setResendingEmail] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    emailOptIn: false,
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showDeletePassword, setShowDeletePassword] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        emailOptIn: user.emailOptIn ?? false,
+      });
+    } else if (token) {
+      // If we have a token but no user, try to refresh user data
+      const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+      if (storedUser?.id) {
+        refreshUser();
+      }
+    }
+  }, [user, token, refreshUser]);
+
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+    setError("");
+    setSuccess("");
+  };
+
+  const handlePasswordChange = (e) => {
+    const { name, value } = e.target;
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+    setError("");
+    setSuccess("");
+  };
+
+  const handleUpdateProfile = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${user.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to update profile");
+      }
+
+      const data = await response.json();
+      
+      if (data.emailChangePending) {
+        setSuccess(data.message || "Email change requested. Please check your new email for verification instructions.");
+      } else {
+        setSuccess("Profile updated successfully!");
+      }
+      
+      // Update auth context with new user data
+      await refreshUser();
+    } catch (err) {
+      setError(err.message || "Failed to update profile");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Password requirements validation for reset password
+  const passwordRequirements = {
+    minLength: passwordData.newPassword.length >= 8,
+    hasUpperCase: /[A-Z]/.test(passwordData.newPassword),
+    hasLowerCase: /[a-z]/.test(passwordData.newPassword),
+    hasNumber: /[0-9]/.test(passwordData.newPassword),
+  };
+
+  const validatePassword = () => {
+    if (!passwordData.newPassword) {
+      return "Password is required";
+    }
+    if (passwordData.newPassword.length < 8) {
+      return "Password must be at least 8 characters";
+    }
+    if (!/[A-Z]/.test(passwordData.newPassword)) {
+      return "Password must contain at least one uppercase letter";
+    }
+    if (!/[a-z]/.test(passwordData.newPassword)) {
+      return "Password must contain at least one lowercase letter";
+    }
+    if (!/[0-9]/.test(passwordData.newPassword)) {
+      return "Password must contain at least one number";
+    }
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      return "Passwords do not match";
+    }
+    return null;
+  };
+
+  const handleResetPassword = async (e) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+
+    const passwordError = validatePassword();
+    if (passwordError) {
+      setError(passwordError);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/users/${user.id}/reset-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          currentPassword: passwordData.currentPassword,
+          newPassword: passwordData.newPassword,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to reset password");
+      }
+
+      setSuccess("Password reset successfully!");
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch (err) {
+      setError(err.message || "Failed to reset password");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    if (!deletePassword) {
+      setError("Please enter your password to confirm deletion");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      // First verify password by attempting login
+      const loginResponse = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: user.email,
+          password: deletePassword,
+        }),
+      });
+
+      if (!loginResponse.ok) {
+        throw new Error("Incorrect password");
+      }
+
+      // Delete account
+      const deleteResponse = await fetch(`${API_BASE_URL}/users/${user.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!deleteResponse.ok) {
+        const error = await deleteResponse.json();
+        throw new Error(error.message || "Failed to delete account");
+      }
+
+      logout();
+      navigate("/");
+    } catch (err) {
+      setError(err.message || "Failed to delete account");
+      setLoading(false);
+    }
+  };
+
+  // Show loading if auth is still loading
+  if (authLoading) {
+    return (
+      <>
+        <Nav />
+        <main>
+          <section className="hero hero-auth" id="home">
+            <div className="hero-content">
+              <h1>My Profile</h1>
+              <p>Loading...</p>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  // If no user after loading, try to get from localStorage and refresh
+  if (!user && token) {
+    const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+    if (storedUser?.id) {
+      // Try to refresh user data
+      refreshUser();
+      return (
+        <>
+          <Nav />
+          <main>
+            <section className="hero hero-auth" id="home">
+              <div className="hero-content">
+                <h1>My Profile</h1>
+                <p>Loading profile data...</p>
+              </div>
+            </section>
+          </main>
+          <Footer />
+        </>
+      );
+    }
+    return (
+      <>
+        <Nav />
+        <main>
+          <section className="hero hero-auth" id="home">
+            <div className="hero-content">
+              <h1>My Profile</h1>
+              <p>Unable to load profile. Please try logging in again.</p>
+            </div>
+          </section>
+        </main>
+        <Footer />
+      </>
+    );
+  }
+
+  if (!user) {
+    return null; // ProtectedRoute will redirect
+  }
+
+  return (
+    <>
+      <Nav />
+      <main>
+        <section className="hero hero-auth" id="home">
+          <div className="hero-content">
+            <h1>My Profile</h1>
+            <p>Manage your account settings</p>
+          </div>
+        </section>
+
+        <section>
+          <div className="container">
+            <div className="profile-container">
+              {/* Update Profile Form */}
+              <div className="profile-section">
+                <h2>Update Profile</h2>
+                {error && <div className="auth-error">{error}</div>}
+                {success && <div className="auth-success">{success}</div>}
+                
+                {user && !user.emailVerified && (
+                  <div className="auth-error" style={{ marginBottom: "1rem" }}>
+                    <strong>Email not verified.</strong> Please check your email for a verification link.
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setResendingEmail(true);
+                        try {
+                          const response = await fetch(`${API_BASE_URL}/email/resend`, {
+                            method: "POST",
+                            headers: {
+                              Authorization: `Bearer ${token}`,
+                            },
+                          });
+                          const data = await response.json();
+                          if (response.ok) {
+                            setSuccess("Verification email sent! Please check your inbox.");
+                          } else {
+                            setError(data.message || "Failed to resend verification email");
+                          }
+                        } catch (err) {
+                          setError("Failed to resend verification email");
+                        } finally {
+                          setResendingEmail(false);
+                        }
+                      }}
+                      disabled={resendingEmail}
+                      style={{
+                        marginLeft: "0.5rem",
+                        padding: "0.25rem 0.75rem",
+                        background: "var(--primary-red)",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "3px",
+                        cursor: resendingEmail ? "not-allowed" : "pointer",
+                        fontSize: "0.85rem",
+                      }}
+                    >
+                      {resendingEmail ? "Sending..." : "Resend"}
+                    </button>
+                  </div>
+                )}
+
+                <form onSubmit={handleUpdateProfile} className="auth-form">
+                  <div className="auth-field">
+                    <label htmlFor="name">Name *</label>
+                    <input
+                      id="name"
+                      name="name"
+                      type="text"
+                      required
+                      value={formData.name}
+                      onChange={handleChange}
+                      className="auth-input"
+                    />
+                  </div>
+
+                  <div className="auth-field">
+                    <label htmlFor="email">Email *</label>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="auth-input"
+                    />
+                  </div>
+
+                  <div className="auth-field">
+                    <label htmlFor="phone">Phone</label>
+                    <input
+                      id="phone"
+                      name="phone"
+                      type="tel"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      className="auth-input"
+                      placeholder="(555) 555-5555"
+                    />
+                  </div>
+
+                  <div className="auth-field">
+                    <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", cursor: "pointer" }}>
+                      <input
+                        type="checkbox"
+                        name="emailOptIn"
+                        checked={formData.emailOptIn}
+                        onChange={handleChange}
+                      />
+                      <span>Opt in for email updates</span>
+                    </label>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="cta-button"
+                    disabled={loading}
+                    style={{ width: "100%", marginTop: "1rem" }}
+                  >
+                    {loading ? "Updating..." : "Update Profile"}
+                  </button>
+                </form>
+              </div>
+
+              {/* Reset Password Form */}
+              <div className="profile-section">
+                <h2>Reset Password</h2>
+                {error && <div className="auth-error">{error}</div>}
+                {success && <div className="auth-success">{success}</div>}
+                <form onSubmit={handleResetPassword} className="auth-form">
+                  <div className="auth-field">
+                    <label htmlFor="currentPassword">Current Password *</label>
+                    <div className="password-input-wrapper">
+                      <input
+                        id="currentPassword"
+                        name="currentPassword"
+                        type={showCurrentPassword ? "text" : "password"}
+                        required
+                        value={passwordData.currentPassword}
+                        onChange={handlePasswordChange}
+                        className="auth-input"
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        aria-label={showCurrentPassword ? "Hide password" : "Show password"}
+                      >
+                        {showCurrentPassword ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="auth-field">
+                    <label htmlFor="newPassword">New Password *</label>
+                    <div className="password-input-wrapper">
+                      <input
+                        id="newPassword"
+                        name="newPassword"
+                        type={showNewPassword ? "text" : "password"}
+                        required
+                        value={passwordData.newPassword}
+                        onChange={handlePasswordChange}
+                        className="auth-input"
+                        minLength={8}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        aria-label={showNewPassword ? "Hide password" : "Show password"}
+                      >
+                        {showNewPassword ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {passwordData.newPassword && (
+                      <div className="password-requirements">
+                        <div className={`password-requirement ${passwordRequirements.minLength ? "met" : ""}`}>
+                          <span className="requirement-icon">{passwordRequirements.minLength ? "✓" : "○"}</span>
+                          <span>At least 8 characters</span>
+                        </div>
+                        <div className={`password-requirement ${passwordRequirements.hasUpperCase ? "met" : ""}`}>
+                          <span className="requirement-icon">{passwordRequirements.hasUpperCase ? "✓" : "○"}</span>
+                          <span>At least one uppercase letter</span>
+                        </div>
+                        <div className={`password-requirement ${passwordRequirements.hasLowerCase ? "met" : ""}`}>
+                          <span className="requirement-icon">{passwordRequirements.hasLowerCase ? "✓" : "○"}</span>
+                          <span>At least one lowercase letter</span>
+                        </div>
+                        <div className={`password-requirement ${passwordRequirements.hasNumber ? "met" : ""}`}>
+                          <span className="requirement-icon">{passwordRequirements.hasNumber ? "✓" : "○"}</span>
+                          <span>At least one number</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="auth-field">
+                    <label htmlFor="confirmPassword">Confirm New Password *</label>
+                    <div className="password-input-wrapper">
+                      <input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        value={passwordData.confirmPassword}
+                        onChange={handlePasswordChange}
+                        className="auth-input"
+                        minLength={8}
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showConfirmPassword ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
+                      <div className="auth-field-error">Passwords do not match</div>
+                    )}
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="cta-button"
+                    disabled={loading}
+                    style={{ width: "100%", marginTop: "1rem" }}
+                  >
+                    {loading ? "Resetting..." : "Reset Password"}
+                  </button>
+                </form>
+              </div>
+
+              {/* Delete Account */}
+              <div className="profile-section profile-section-danger">
+                <h2>Delete Membership</h2>
+                <p style={{ color: "var(--text-gray)", marginBottom: "1rem" }}>
+                  This action cannot be undone. All your data will be permanently deleted.
+                </p>
+
+                {!showDeleteConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="cta-button"
+                    style={{
+                      width: "100%",
+                      background: "var(--primary-red)",
+                      marginTop: "1rem",
+                    }}
+                  >
+                    Delete My Account
+                  </button>
+                ) : (
+                    <div>
+                      <div className="auth-field">
+                        <label htmlFor="deletePassword">Enter your password to confirm *</label>
+                        <div className="password-input-wrapper">
+                          <input
+                            id="deletePassword"
+                            name="deletePassword"
+                            type={showDeletePassword ? "text" : "password"}
+                            required
+                            value={deletePassword}
+                            onChange={(e) => setDeletePassword(e.target.value)}
+                            className="auth-input"
+                            placeholder="Your password"
+                          />
+                          <button
+                            type="button"
+                            className="password-toggle"
+                            onClick={() => setShowDeletePassword(!showDeletePassword)}
+                            aria-label={showDeletePassword ? "Hide password" : "Show password"}
+                          >
+                            {showDeletePassword ? (
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                              </svg>
+                            ) : (
+                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                              </svg>
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    <div style={{ display: "flex", gap: "0.5rem", marginTop: "1rem" }}>
+                      <button
+                        type="button"
+                        onClick={handleDeleteAccount}
+                        className="cta-button"
+                        disabled={loading}
+                        style={{
+                          flex: 1,
+                          background: "var(--primary-red)",
+                        }}
+                      >
+                        {loading ? "Deleting..." : "Confirm Delete"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowDeleteConfirm(false);
+                          setDeletePassword("");
+                          setError("");
+                        }}
+                        className="cta-button"
+                        disabled={loading}
+                        style={{
+                          flex: 1,
+                          background: "var(--text-gray)",
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+      <Footer />
+    </>
+  );
+}
+
+export default Profile;
