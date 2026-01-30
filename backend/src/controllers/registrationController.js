@@ -28,18 +28,50 @@ export const createRegistration = async (req, res) => {
       address: eventRows[0].address ?? null,
     };
 
+    const trimmedEmail = email.trim();
+
+    if (userId) {
+      const [existingByUser] = await connection.execute(
+        "SELECT 1 FROM event_registrations WHERE event_id = ? AND user_id = ? LIMIT 1",
+        [eventId, userId]
+      );
+      if (existingByUser.length > 0) {
+        connection.release();
+        sendRegistrationConfirmationEmail(trimmedEmail, name, event).catch((emailErr) => {
+          console.error("Resend confirmation email failed:", emailErr);
+        });
+        return res.status(200).json({
+          message: "You're already signed up for this event. We've sent another confirmation email to your address.",
+          alreadyRegistered: true,
+        });
+      }
+    } else {
+      const [existingByEmail] = await connection.execute(
+        "SELECT 1 FROM event_registrations WHERE event_id = ? AND LOWER(TRIM(email)) = LOWER(?) LIMIT 1",
+        [eventId, trimmedEmail]
+      );
+      if (existingByEmail.length > 0) {
+        connection.release();
+        sendRegistrationConfirmationEmail(trimmedEmail, name, event).catch((emailErr) => {
+          console.error("Resend confirmation email failed:", emailErr);
+        });
+        return res.status(200).json({
+          message: "You're already signed up for this event. We've sent another confirmation email to your address.",
+          alreadyRegistered: true,
+        });
+      }
+    }
+
     await connection.execute(
       `INSERT INTO event_registrations (event_id, user_id, name, email, phone, message)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [eventId, userId, name, email.trim(), phone?.trim() || null, message?.trim() || null]
+      [eventId, userId, name, trimmedEmail, phone?.trim() || null, message?.trim() || null]
     );
     connection.release();
 
-    try {
-      await sendRegistrationConfirmationEmail(email.trim(), name, event);
-    } catch (emailErr) {
+    sendRegistrationConfirmationEmail(trimmedEmail, name, event).catch((emailErr) => {
       console.error("Registration saved but confirmation email failed:", emailErr);
-    }
+    });
 
     res.status(201).json({ message: "Registration submitted successfully" });
   } catch (error) {

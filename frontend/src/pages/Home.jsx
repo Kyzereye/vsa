@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Nav,
   Hero,
@@ -11,6 +13,21 @@ import {
 } from "../components";
 
 function Home() {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash) {
+      const id = location.hash.slice(1);
+      const el = document.getElementById(id);
+      if (el) {
+        const t = setTimeout(() => {
+          el.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 100);
+        return () => clearTimeout(t);
+      }
+    }
+  }, [location.hash]);
+
   return (
     <>
       <Nav />

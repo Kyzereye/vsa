@@ -1,13 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link, useParams, Navigate } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import RegistrationDialog from "../components/RegistrationDialog";
-import { fetchEventBySlug, fetchEventById } from "../api";
+import { fetchEventBySlug, fetchEventById, fetchMyRegistrations } from "../api";
+import { useAuth } from "../contexts/AuthContext";
 
 function EventDetail() {
+  const { token } = useAuth();
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [event, setEvent] = useState(null);
+  const [myRegistrations, setMyRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const { slug: slugOrId } = useParams();
 
@@ -23,6 +26,22 @@ function EventDetail() {
       .catch(() => setEvent(null))
       .finally(() => setLoading(false));
   }, [slugOrId]);
+
+  useEffect(() => {
+    if (token) {
+      fetchMyRegistrations(token)
+        .then(setMyRegistrations)
+        .catch(() => setMyRegistrations([]));
+    } else {
+      setMyRegistrations([]);
+    }
+  }, [token]);
+
+  const registeredEventIds = useMemo(
+    () => new Set(myRegistrations.map((r) => r.eventId)),
+    [myRegistrations]
+  );
+  const isAlreadySignedUp = event && token && registeredEventIds.has(event.id);
 
   if (!slugOrId || (!loading && !event)) {
     return <Navigate to="/" replace />;
@@ -83,13 +102,17 @@ function EventDetail() {
               </div>
             )}
             <div style={{ display: "flex", gap: "1rem", justifyContent: "center", flexWrap: "wrap" }}>
-              <button
-                type="button"
-                className="cta-button"
-                onClick={() => setRegistrationOpen(true)}
-              >
-                Register
-              </button>
+              {isAlreadySignedUp ? (
+                <span className="event-detail-already-signed-up">You&apos;re signed up</span>
+              ) : (
+                <button
+                  type="button"
+                  className="cta-button"
+                  onClick={() => setRegistrationOpen(true)}
+                >
+                  Register
+                </button>
+              )}
               <Link to={backLink} className="cta-button">
                 {backLinkText}
               </Link>
@@ -110,13 +133,17 @@ function EventDetail() {
               )}
             </div>
             <p className="text-center" style={{ marginTop: "2rem" }}>
-              <button
-                type="button"
-                className="cta-button"
-                onClick={() => setRegistrationOpen(true)}
-              >
-                Register for this trip
-              </button>
+              {isAlreadySignedUp ? (
+                <span className="event-detail-already-signed-up">You&apos;re signed up</span>
+              ) : (
+                <button
+                  type="button"
+                  className="cta-button"
+                  onClick={() => setRegistrationOpen(true)}
+                >
+                  Register for this trip
+                </button>
+              )}
             </p>
             <p className="text-center" style={{ marginTop: "1rem" }}>
               <Link to={backLink} className="cta-button" style={{ background: "var(--dark-gray)" }}>

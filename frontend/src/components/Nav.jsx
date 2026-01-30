@@ -223,9 +223,9 @@ function Nav() {
                   {label}
                 </a>
               ) : (
-                <a href={`/${href}`} onClick={closeAll}>
+                <Link to={{ pathname: "/", hash: href.slice(1) }} onClick={closeAll}>
                   {label}
-                </a>
+                </Link>
               )}
             </li>
           ))}

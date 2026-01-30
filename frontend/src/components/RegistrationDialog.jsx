@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createRegistration } from "../api";
+import { useAuth } from "../contexts/AuthContext";
 
 /**
  * Reusable registration dialog for ShredVets and VSA events.
@@ -8,9 +9,23 @@ import { createRegistration } from "../api";
  * @param {object} [event] - Optional event context { id, title, date, location } (id required to submit to backend)
  */
 function RegistrationDialog({ open, onClose, event }) {
+  const { user, token } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [submitMessage, setSubmitMessage] = useState(null);
   const [error, setError] = useState(null);
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
+
+  useEffect(() => {
+    if (open && user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || prev.phone,
+      }));
+    }
+  }, [open, user]);
 
   if (!open) return null;
 
@@ -22,8 +37,9 @@ function RegistrationDialog({ open, onClose, event }) {
     e.preventDefault();
     setError(null);
     if (event?.id) {
+      setSubmitting(true);
       try {
-        await createRegistration(
+        const data = await createRegistration(
           {
             eventId: event.id,
             name: formData.name,
@@ -34,16 +50,21 @@ function RegistrationDialog({ open, onClose, event }) {
           token ?? undefined
         );
         setSubmitted(true);
+        setSubmitMessage(data.alreadyRegistered ? data.message : "Thanks! We'll be in touch.");
         setFormData({ name: "", email: "", phone: "", message: "" });
         setTimeout(() => {
           setSubmitted(false);
+          setSubmitMessage(null);
           onClose();
         }, 1500);
       } catch (err) {
         setError(err.message || "Failed to submit registration");
+      } finally {
+        setSubmitting(false);
       }
     } else {
       setSubmitted(true);
+      setSubmitMessage(null);
       setFormData({ name: "", email: "", phone: "", message: "" });
       setTimeout(() => {
         setSubmitted(false);
@@ -95,7 +116,7 @@ function RegistrationDialog({ open, onClose, event }) {
           </p>
         )}
         {submitted ? (
-          <p className="registration-dialog-success">Thanks! We&apos;ll be in touch.</p>
+          <p className="registration-dialog-success">{submitMessage ?? "Thanks! We'll be in touch."}</p>
         ) : (
           <form onSubmit={handleSubmit} className="registration-dialog-form">
             <div className="registration-dialog-field">
@@ -148,8 +169,12 @@ function RegistrationDialog({ open, onClose, event }) {
               <button type="button" className="registration-dialog-btn secondary" onClick={onClose}>
                 Cancel
               </button>
-              <button type="submit" className="registration-dialog-btn primary cta-button">
-                Submit
+              <button
+                type="submit"
+                className="registration-dialog-btn primary cta-button"
+                disabled={submitting}
+              >
+                {submitting ? "Submitting…" : "Submit"}
               </button>
             </div>
           </form>

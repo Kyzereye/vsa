@@ -1,9 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
-import { fetchEvents } from "../api";
+import { fetchEvents, fetchMyRegistrations } from "../api";
+import { useAuth } from "../contexts/AuthContext";
 
 function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming Events" }) {
+  const { token } = useAuth();
   const [events, setEvents] = useState([]);
+  const [myRegistrations, setMyRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -13,6 +16,21 @@ function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming E
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, [eventType]);
+
+  useEffect(() => {
+    if (token) {
+      fetchMyRegistrations(token)
+        .then(setMyRegistrations)
+        .catch(() => setMyRegistrations([]));
+    } else {
+      setMyRegistrations([]);
+    }
+  }, [token]);
+
+  const registeredEventIds = useMemo(
+    () => new Set(myRegistrations.map((r) => r.eventId)),
+    [myRegistrations]
+  );
 
   if (loading) {
     return (
@@ -49,6 +67,7 @@ function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming E
         </div>
         <div className="events-list events-list-grid">
           {events.map(({ id, date, title, location, address, slug, canceled, dateChanged, locationChanged }) => {
+            const isRegistered = token && registeredEventIds.has(id);
             const content = (
               <>
                 <div className="event-date">
@@ -64,6 +83,11 @@ function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming E
                   {address && <div className="event-address">{address}</div>}
                   {locationChanged && <span className="event-status-badge event-status-changed">Location Changed</span>}
                 </div>
+                {isRegistered && !canceled && (
+                  <div className="event-card-registered">
+                    <span className="event-status-badge event-status-registered">You&apos;re signed up</span>
+                  </div>
+                )}
               </>
             );
             return (

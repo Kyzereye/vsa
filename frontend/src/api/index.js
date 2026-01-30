@@ -109,6 +109,7 @@ export async function createRegistration({ eventId, name, email, phone, message 
     const data = await res.json().catch(() => ({}));
     throw new Error(data.message || "Failed to submit registration");
   }
+  return res.json();
 }
 
 export async function fetchMyRegistrations(token) {
