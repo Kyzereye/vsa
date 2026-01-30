@@ -230,3 +230,77 @@ export const sendEmailChangeVerificationEmail = async (email, name, verification
     throw new Error("Failed to send verification email");
   }
 };
+
+/** Send event registration confirmation to the registrant. */
+export const sendRegistrationConfirmationEmail = async (recipientEmail, recipientName, event) => {
+  const { title, date, location, address } = event;
+  const dateStr = date ? new Date(date).toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" }) : "TBD";
+  const locationLine = [location, address].filter(Boolean).join(address ? " — " : "");
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: recipientEmail,
+    subject: `You're registered: ${title}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #003366; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9f9f9; }
+            .event-box { background: #fff; border-left: 4px solid #003366; padding: 12px 16px; margin: 16px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header"><h1>Veterans Sportsmens Association</h1></div>
+            <div class="content">
+              <h2>You're registered</h2>
+              <p>Hello ${recipientName},</p>
+              <p>You're signed up for the following event:</p>
+              <div class="event-box">
+                <strong>${title}</strong><br>
+                ${dateStr}<br>
+                ${locationLine ? locationLine + "<br>" : ""}
+              </div>
+              <p>We look forward to seeing you there.</p>
+            </div>
+            <div class="footer">
+              <p>Veterans Sportsmens Association</p>
+              <p>Veterans Serving Veterans</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+You're registered
+
+Hello ${recipientName},
+
+You're signed up for the following event:
+
+${title}
+${dateStr}
+${locationLine ? locationLine + "\n" : ""}
+
+We look forward to seeing you there.
+
+Veterans Sportsmens Association
+Veterans Serving Veterans
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Registration confirmation email sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Error sending registration confirmation email:", error);
+    throw error;
+  }
+};

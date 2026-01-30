@@ -23,13 +23,16 @@ function RegistrationDialog({ open, onClose, event }) {
     setError(null);
     if (event?.id) {
       try {
-        await createRegistration({
-          eventId: event.id,
-          name: formData.name,
-          email: formData.email,
-          phone: formData.phone || undefined,
-          message: formData.message || undefined,
-        });
+        await createRegistration(
+          {
+            eventId: event.id,
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone || undefined,
+            message: formData.message || undefined,
+          },
+          token ?? undefined
+        );
         setSubmitted(true);
         setFormData({ name: "", email: "", phone: "", message: "" });
         setTimeout(() => {

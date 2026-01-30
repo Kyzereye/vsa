@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
+import { ExpansionPanel } from "../components";
 import { useAuth } from "../contexts/AuthContext";
+import { fetchMyRegistrations, deleteRegistration } from "../api";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
 
@@ -30,6 +32,21 @@ function Profile() {
   const [showDeletePassword, setShowDeletePassword] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deletePassword, setDeletePassword] = useState("");
+  const [myRegistrations, setMyRegistrations] = useState([]);
+  const [registrationsLoading, setRegistrationsLoading] = useState(false);
+  const [cancellingId, setCancellingId] = useState(null);
+
+  useEffect(() => {
+    if (token) {
+      setRegistrationsLoading(true);
+      fetchMyRegistrations(token)
+        .then(setMyRegistrations)
+        .catch(() => setMyRegistrations([]))
+        .finally(() => setRegistrationsLoading(false));
+    } else {
+      setMyRegistrations([]);
+    }
+  }, [token]);
 
   useEffect(() => {
     if (user) {
@@ -295,9 +312,68 @@ function Profile() {
         <section>
           <div className="container">
             <div className="profile-container">
+              {/* My event sign-ups */}
+              <ExpansionPanel
+                title="My event sign-ups"
+                summary={registrationsLoading ? "" : myRegistrations.length > 0 ? `${myRegistrations.length} event${myRegistrations.length !== 1 ? "s" : ""}` : null}
+                defaultExpanded
+              >
+                {registrationsLoading ? (
+                  <p style={{ color: "var(--text-gray)" }}>Loading…</p>
+                ) : myRegistrations.length === 0 ? (
+                  <p style={{ color: "var(--text-gray)" }}>You haven&apos;t signed up for any events yet.</p>
+                ) : (
+                  <ul className="profile-registrations-list">
+                    {myRegistrations.map((r) => {
+                      const eventDate = r.eventDate
+                        ? new Date(r.eventDate).toLocaleDateString("en-US", {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })
+                        : "TBD";
+                      return (
+                        <li key={r.id} className="profile-registration-item">
+                          <div className="profile-registration-info">
+                            <Link to={`/events/${r.eventSlug}`} className="profile-registration-title">
+                              {r.eventTitle}
+                            </Link>
+                            <span className="profile-registration-date">{eventDate}</span>
+                            {(r.eventLocation || r.eventAddress) && (
+                              <span className="profile-registration-location">
+                                {[r.eventLocation, r.eventAddress].filter(Boolean).join(" · ")}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            type="button"
+                            className="profile-registration-cancel"
+                            disabled={cancellingId === r.id}
+                            onClick={async () => {
+                              if (!token || !window.confirm("Cancel your RSVP for this event?")) return;
+                              setCancellingId(r.id);
+                              try {
+                                await deleteRegistration(r.id, token);
+                                setMyRegistrations((prev) => prev.filter((x) => x.id !== r.id));
+                              } catch (err) {
+                                setError(err.message || "Failed to cancel");
+                              } finally {
+                                setCancellingId(null);
+                              }
+                            }}
+                          >
+                            {cancellingId === r.id ? "Cancelling…" : "Cancel RSVP"}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                )}
+              </ExpansionPanel>
+
               {/* Update Profile Form */}
-              <div className="profile-section">
-                <h2>Update Profile</h2>
+              <ExpansionPanel title="Update Profile">
                 {error && <div className="auth-error">{error}</div>}
                 {success && <div className="auth-success">{success}</div>}
                 
@@ -405,11 +481,10 @@ function Profile() {
                     {loading ? "Updating..." : "Update Profile"}
                   </button>
                 </form>
-              </div>
+              </ExpansionPanel>
 
               {/* Reset Password Form */}
-              <div className="profile-section">
-                <h2>Reset Password</h2>
+              <ExpansionPanel title="Reset Password">
                 {error && <div className="auth-error">{error}</div>}
                 {success && <div className="auth-success">{success}</div>}
                 <form onSubmit={handleResetPassword} className="auth-form">
@@ -546,11 +621,10 @@ function Profile() {
                     {loading ? "Resetting..." : "Reset Password"}
                   </button>
                 </form>
-              </div>
+              </ExpansionPanel>
 
               {/* Delete Account */}
-              <div className="profile-section profile-section-danger">
-                <h2>Delete Membership</h2>
+              <ExpansionPanel title="Delete Membership" className="profile-section-danger">
                 <p style={{ color: "var(--text-gray)", marginBottom: "1rem" }}>
                   This action cannot be undone. All your data will be permanently deleted.
                 </p>
@@ -635,7 +709,7 @@ function Profile() {
                     </div>
                   </div>
                 )}
-              </div>
+              </ExpansionPanel>
             </div>
           </div>
         </section>

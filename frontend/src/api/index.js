@@ -99,15 +99,42 @@ export async function fetchEventById(id) {
   };
 }
 
-export async function createRegistration({ eventId, name, email, phone, message }) {
+export async function createRegistration({ eventId, name, email, phone, message }, token = null) {
   const res = await fetch(`${API_BASE}/registrations`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...authHeaders(token) },
     body: JSON.stringify({ eventId, name, email, phone: phone || null, message: message || null }),
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data.message || "Failed to submit registration");
+  }
+}
+
+export async function fetchMyRegistrations(token) {
+  const res = await fetch(`${API_BASE}/registrations/mine`, { headers: authHeaders(token) });
+  if (!res.ok) throw new Error("Failed to fetch your registrations");
+  const data = await res.json();
+  return data.map((r) => ({
+    id: r.id,
+    eventId: r.eventId,
+    eventTitle: r.eventTitle,
+    eventDate: r.eventDate,
+    eventSlug: r.eventSlug,
+    eventLocation: r.eventLocation,
+    eventAddress: r.eventAddress ?? null,
+    registrationDate: r.registrationDate,
+  }));
+}
+
+export async function deleteRegistration(id, token) {
+  const res = await fetch(`${API_BASE}/registrations/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(token),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}));
+    throw new Error(data.message || "Failed to cancel registration");
   }
 }
 

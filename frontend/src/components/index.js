@@ -14,3 +14,4 @@ export { default as AdminEvents } from "./AdminEvents";
 export { default as AdminPrograms } from "./AdminPrograms";
 export { default as AdminNews } from "./AdminNews";
 export { default as AdminRegistrations } from "./AdminRegistrations";
+export { default as ExpansionPanel } from "./ExpansionPanel";
