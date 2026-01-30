@@ -48,7 +48,7 @@ function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming E
           )}
         </div>
         <div className="events-list events-list-grid">
-          {events.map(({ id, date, title, location, slug, canceled, dateChanged, locationChanged }) => {
+          {events.map(({ id, date, title, location, address, slug, canceled, dateChanged, locationChanged }) => {
             const content = (
               <>
                 <div className="event-date">
@@ -61,21 +61,15 @@ function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming E
                 </div>
                 <div className="event-location">
                   {location}
+                  {address && <div className="event-address">{address}</div>}
                   {locationChanged && <span className="event-status-badge event-status-changed">Location Changed</span>}
                 </div>
               </>
             );
-            if (slug) {
-              return (
-                <Link key={id} to={`/events/${slug}`} className="event-card event-card-link">
-                  {content}
-                </Link>
-              );
-            }
             return (
-              <div key={id} className="event-card">
+              <Link key={id} to={`/events/${slug || id}`} className="event-card event-card-link">
                 {content}
-              </div>
+              </Link>
             );
           })}
         </div>

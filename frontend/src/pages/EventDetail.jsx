@@ -3,26 +3,28 @@ import { Link, useParams, Navigate } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import RegistrationDialog from "../components/RegistrationDialog";
-import { fetchEventBySlug } from "../api";
+import { fetchEventBySlug, fetchEventById } from "../api";
 
 function EventDetail() {
   const [registrationOpen, setRegistrationOpen] = useState(false);
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { slug } = useParams();
+  const { slug: slugOrId } = useParams();
 
   useEffect(() => {
-    if (!slug) {
+    if (!slugOrId) {
       setLoading(false);
       return;
     }
-    fetchEventBySlug(slug)
+    const isNumericId = /^\d+$/.test(slugOrId);
+    const fetchFn = isNumericId ? () => fetchEventById(Number(slugOrId)) : () => fetchEventBySlug(slugOrId);
+    fetchFn()
       .then(setEvent)
       .catch(() => setEvent(null))
       .finally(() => setLoading(false));
-  }, [slug]);
+  }, [slugOrId]);
 
-  if (!slug || (!loading && !event)) {
+  if (!slugOrId || (!loading && !event)) {
     return <Navigate to="/" replace />;
   }
 
@@ -42,8 +44,7 @@ function EventDetail() {
     );
   }
 
-  const { date, title, location, subtitle, details } = event;
-  const eventForDialog = { title, date, location };
+  const { date, title, location, address, subtitle, details } = event;
   const isShredVetsEvent = event.eventType === "shredvets" || subtitle === "ShredVets Trip";
   const backLink = isShredVetsEvent ? "/shredvets#events" : "/#events";
   const backLinkText = isShredVetsEvent ? "Back to ShredVets Events" : "Back to VSA Events";
@@ -60,6 +61,7 @@ function EventDetail() {
             {subtitle && <p>{subtitle}</p>}
             <p style={{ opacity: 0.95, fontSize: "1.1rem" }}>
               {date} · {location}
+              {address && <> · {address}</>}
             </p>
             {(event.canceled || event.dateChanged || event.locationChanged) && (
               <div style={{ marginTop: "1rem", display: "flex", gap: "0.5rem", justifyContent: "center", flexWrap: "wrap" }}>
@@ -128,7 +130,7 @@ function EventDetail() {
       <RegistrationDialog
         open={registrationOpen}
         onClose={() => setRegistrationOpen(false)}
-        event={eventForDialog}
+        event={event}
       />
     </>
   );

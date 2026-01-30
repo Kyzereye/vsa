@@ -7,6 +7,7 @@ import eventRoutes from "./routes/events.js";
 import programRoutes from "./routes/programs.js";
 import newsRoutes from "./routes/news.js";
 import emailVerificationRoutes from "./routes/emailVerification.js";
+import registrationRoutes from "./routes/registrations.js";
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use("/api/events", eventRoutes);
 app.use("/api/programs", programRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/email", emailVerificationRoutes);
+app.use("/api/registrations", registrationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -19,6 +19,7 @@ function formatEvent(row) {
     date: row.date,
     title: row.title,
     location: row.location,
+    address: row.address ?? null,
     slug: row.slug,
     eventType: row.event_type,
     canceled: Boolean(row.canceled),
@@ -26,6 +27,7 @@ function formatEvent(row) {
     locationChanged: Boolean(row.location_changed),
     originalDate: row.original_date,
     originalLocation: row.original_location,
+    originalAddress: row.original_address ?? null,
   };
 }
 
@@ -35,11 +37,14 @@ export const getEvents = async (req, res) => {
     const { event_type: eventType } = req.query;
     connection = await pool.getConnection();
 
-    let sql = "SELECT id, date, title, location, slug, event_type, canceled, date_changed, location_changed, original_date, original_location FROM events";
+    const eventCols = "id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed, original_date, original_location, original_address";
+    let sql = `SELECT ${eventCols} FROM events`;
     const params = [];
 
-    if (eventType === "vsa" || eventType === "shredvets") {
-      sql = "SELECT id, date, title, location, slug, event_type, canceled, date_changed, location_changed, original_date, original_location FROM events WHERE event_type = ?";
+    if (eventType === "vsa") {
+      sql = `SELECT ${eventCols} FROM events WHERE event_type IN ('vsa', 'shredvets')`;
+    } else if (eventType === "shredvets") {
+      sql = `SELECT ${eventCols} FROM events WHERE event_type = ?`;
       params.push(eventType);
     }
 
@@ -63,7 +68,7 @@ export const getEventById = async (req, res) => {
     connection = await pool.getConnection();
 
     const [rows] = await connection.execute(
-      "SELECT id, date, title, location, slug, event_type, canceled, date_changed, location_changed, original_date, original_location FROM events WHERE id = ?",
+      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed, original_date, original_location, original_address FROM events WHERE id = ?",
       [id]
     );
     connection.release();
@@ -87,7 +92,7 @@ export const getEventBySlug = async (req, res) => {
     connection = await pool.getConnection();
 
     const [eventRows] = await connection.execute(
-      "SELECT id, date, title, location, slug, event_type, canceled, date_changed, location_changed, original_date, original_location FROM events WHERE slug = ?",
+      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed, original_date, original_location, original_address FROM events WHERE slug = ?",
       [slug]
     );
 
@@ -125,7 +130,7 @@ export const getEventBySlug = async (req, res) => {
 export const createEvent = async (req, res) => {
   let connection;
   try {
-    const { date, title, location, slug, eventType, canceled, dateChanged, locationChanged, originalDate, originalLocation } = req.body;
+    const { date, title, location, address, slug, eventType, canceled, dateChanged, locationChanged, originalDate, originalLocation, originalAddress } = req.body;
 
     if (!date || !title || !location) {
       return res.status(400).json({ message: "Date, title, and location are required" });
@@ -135,12 +140,13 @@ export const createEvent = async (req, res) => {
 
     connection = await pool.getConnection();
     const [result] = await connection.execute(
-      `INSERT INTO events (date, title, location, slug, event_type, canceled, date_changed, location_changed, original_date, original_location)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO events (date, title, location, address, slug, event_type, canceled, date_changed, location_changed, original_date, original_location, original_address)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         date,
         title,
         location,
+        address || null,
         slug || null,
         event_type,
         canceled ? 1 : 0,
@@ -148,11 +154,12 @@ export const createEvent = async (req, res) => {
         locationChanged ? 1 : 0,
         originalDate || null,
         originalLocation || null,
+        originalAddress || null,
       ]
     );
     const insertId = result.insertId;
     const [rows] = await connection.execute(
-      "SELECT id, date, title, location, slug, event_type, canceled, date_changed, location_changed, original_date, original_location FROM events WHERE id = ?",
+      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed, original_date, original_location, original_address FROM events WHERE id = ?",
       [insertId]
     );
     connection.release();
@@ -169,7 +176,7 @@ export const updateEvent = async (req, res) => {
   let connection;
   try {
     const { id } = req.params;
-    const { date, title, location, slug, eventType, canceled, dateChanged, locationChanged, originalDate, originalLocation } = req.body;
+    const { date, title, location, address, slug, eventType, canceled, dateChanged, locationChanged, originalDate, originalLocation, originalAddress } = req.body;
 
     connection = await pool.getConnection();
     const [existing] = await connection.execute("SELECT id FROM events WHERE id = ?", [id]);
@@ -192,6 +199,10 @@ export const updateEvent = async (req, res) => {
     if (location !== undefined) {
       updates.push("location = ?");
       values.push(location);
+    }
+    if (address !== undefined) {
+      updates.push("address = ?");
+      values.push(address || null);
     }
     if (slug !== undefined) {
       updates.push("slug = ?");
@@ -221,6 +232,10 @@ export const updateEvent = async (req, res) => {
       updates.push("original_location = ?");
       values.push(originalLocation || null);
     }
+    if (originalAddress !== undefined) {
+      updates.push("original_address = ?");
+      values.push(originalAddress || null);
+    }
 
     if (updates.length === 0) {
       connection.release();
@@ -231,7 +246,7 @@ export const updateEvent = async (req, res) => {
     await connection.execute(`UPDATE events SET ${updates.join(", ")} WHERE id = ?`, values);
 
     const [rows] = await connection.execute(
-      "SELECT id, date, title, location, slug, event_type, canceled, date_changed, location_changed, original_date, original_location FROM events WHERE id = ?",
+      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed, original_date, original_location, original_address FROM events WHERE id = ?",
       [id]
     );
     connection.release();

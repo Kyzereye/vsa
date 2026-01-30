@@ -87,20 +87,6 @@ function Nav() {
               </li>
               {!authLoading && isAuthenticated() ? (
                 <>
-                  {!isProfilePage && (
-                    <li>
-                      <Link to="/profile" onClick={closeMenu}>
-                        Profile
-                      </Link>
-                    </li>
-                  )}
-                  {isAdmin() && (
-                    <li>
-                      <Link to="/admin" onClick={closeMenu}>
-                        Admin
-                      </Link>
-                    </li>
-                  )}
                   <li>
                     <button
                       type="button"
@@ -167,7 +153,7 @@ function Nav() {
                       </Link>
                     </li>
                   )}
-                  {isAdmin() && (
+                  {isAdmin() && !isAdminPage && (
                     <li>
                       <Link to="/admin" onClick={closeMenu}>
                         Admin

@@ -13,3 +13,4 @@ export { default as ProtectedRoute } from "./ProtectedRoute";
 export { default as AdminEvents } from "./AdminEvents";
 export { default as AdminPrograms } from "./AdminPrograms";
 export { default as AdminNews } from "./AdminNews";
+export { default as AdminRegistrations } from "./AdminRegistrations";

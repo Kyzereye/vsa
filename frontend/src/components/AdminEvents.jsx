@@ -7,6 +7,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
     date: "",
     title: "",
     location: "",
+    address: "",
     slug: "",
     status: "active",
     canceled: false,
@@ -14,6 +15,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
     locationChanged: false,
     originalDate: "",
     originalLocation: "",
+    originalAddress: "",
   });
 
   const handleEdit = (event) => {
@@ -22,6 +24,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       date: event.date,
       title: event.title,
       location: event.location,
+      address: event.address || "",
       slug: event.slug || "",
       status: event.status || "active",
       canceled: event.canceled || false,
@@ -29,6 +32,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       locationChanged: event.locationChanged || false,
       originalDate: event.originalDate || event.date,
       originalLocation: event.originalLocation || event.location,
+      originalAddress: event.originalAddress || event.address || "",
     });
     setShowAddForm(false);
   };
@@ -40,6 +44,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       date: "",
       title: "",
       location: "",
+      address: "",
       slug: "",
       status: "active",
       canceled: false,
@@ -47,6 +52,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       locationChanged: false,
       originalDate: "",
       originalLocation: "",
+      originalAddress: "",
     });
   };
 
@@ -57,6 +63,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       date: "",
       title: "",
       location: "",
+      address: "",
       slug: "",
       status: "active",
       canceled: false,
@@ -64,6 +71,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       locationChanged: false,
       originalDate: "",
       originalLocation: "",
+      originalAddress: "",
     });
   };
 
@@ -75,13 +83,15 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       const originalEvent = events.find((e) => e.id === editingId);
       const originalDate = formData.originalDate || originalEvent?.date || formData.date;
       const originalLocation = formData.originalLocation || originalEvent?.location || formData.location;
+      const originalAddress = formData.originalAddress ?? originalEvent?.address ?? formData.address;
       
       eventData = {
         ...formData,
         originalDate,
         originalLocation,
+        originalAddress,
         dateChanged: formData.date !== originalDate,
-        locationChanged: formData.location !== originalLocation,
+        locationChanged: (formData.location !== originalLocation) || (formData.address !== originalAddress),
       };
       onUpdate(editingId, eventData);
     } else {
@@ -90,6 +100,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
         ...formData,
         originalDate: formData.date,
         originalLocation: formData.location,
+        originalAddress: formData.address || null,
         dateChanged: false,
         locationChanged: false,
       };
@@ -153,7 +164,18 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                 value={formData.location}
                 onChange={handleChange}
                 className="admin-input"
-                placeholder="Event Location"
+                placeholder="Venue or place name"
+              />
+            </div>
+            <div>
+              <label>Address (optional)</label>
+              <input
+                type="text"
+                name="address"
+                value={formData.address}
+                onChange={handleChange}
+                className="admin-input"
+                placeholder="Street address"
               />
             </div>
             <div>
@@ -234,6 +256,16 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                         value={formData.location}
                         onChange={handleChange}
                         className="admin-input"
+                        placeholder="Location"
+                      />
+                      <input
+                        type="text"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        className="admin-input"
+                        placeholder="Address"
+                        style={{ marginTop: "0.25rem" }}
                       />
                       {formData.locationChanged && (
                         <div className="admin-alert admin-alert-changed">Location Changed</div>
@@ -303,7 +335,8 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                     </td>
                     <td>{event.title}</td>
                     <td>
-                      {event.location}
+                      <div>{event.location}</div>
+                      {event.address && <div style={{ fontSize: "0.9rem", color: "var(--text-gray)" }}>{event.address}</div>}
                       {event.locationChanged && (
                         <div className="admin-alert admin-alert-changed">Location Changed</div>
                       )}

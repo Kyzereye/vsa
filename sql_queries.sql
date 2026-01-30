@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS events (
     date VARCHAR(50) NOT NULL,
     title VARCHAR(255) NOT NULL,
     location VARCHAR(255) NOT NULL,
+    address VARCHAR(255),
     slug VARCHAR(255) UNIQUE,
     event_type ENUM('vsa', 'shredvets') NOT NULL DEFAULT 'vsa',
     canceled TINYINT(1) NOT NULL DEFAULT 0,
@@ -60,6 +61,7 @@ CREATE TABLE IF NOT EXISTS events (
     location_changed TINYINT(1) NOT NULL DEFAULT 0,
     original_date VARCHAR(50),
     original_location VARCHAR(255),
+    original_address VARCHAR(255),
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -176,63 +178,168 @@ CREATE INDEX idx_registrations_email ON event_registrations(email);
 -- Note: Password hashes are bcrypt hashes. In production, generate these securely.
 -- Default admin: admin@vsa.org / admin123
 -- Default member: john@example.com / password123
-INSERT INTO users (id, name, email, phone, password_hash, role, status, join_date, email_opt_in) VALUES
-(1, 'Admin User', 'admin@vsa.org', '(555) 123-4567', '$2a$10$rK8X8X8X8X8X8X8X8X8X8u8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X', 'admin', 'active', '2024-01-01', true),
-(2, 'John Doe', 'john@example.com', '(555) 234-5678', '$2a$10$rK8X8X8X8X8X8X8X8X8X8u8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X', 'member', 'active', '2024-01-15', 0);
+INSERT INTO users (id, name, email, phone, password_hash, role, status, join_date, email_opt_in, email_verified) VALUES
+(1, 'Jeff Kyzer', 'kyzereye@gmail.com', '(555) 123-4567', '$2a$10$ySjXwMRQOPyV5PqXtL6AruOWuDElPMmb253CJUJtEUbOEL/5zx5.W', 'admin', 'active', '2024-01-01', 0, 1);
 
 -- Reset auto increment for users table (optional - only needed if inserting with specific IDs)
 -- Note: MySQL doesn't allow subqueries in ALTER TABLE, so set manually if needed
 -- ALTER TABLE users AUTO_INCREMENT = 3;
 
--- Insert VSA Events
-INSERT INTO events (id, date, title, location, slug, event_type, canceled, date_changed, location_changed) VALUES
-(1, 'Sat, Jan 31', 'Jack Frost Ski Resort', 'Jack Frost Ski Resort', 'jack-frost-ski-resort-jan-31', 'vsa', 0, 0, 0),
-(2, 'Sat, Feb 07', 'NRA Great Outdoor Show 2026', '2300 N Cameron St', NULL, 'vsa', 0, 0, 0),
-(3, 'Sat, Feb 07', 'Team River Runner - Kayaking Workshop', 'Montrose VA - Pool', NULL, 'vsa', 0, 0, 0),
-(4, 'Sat, Mar 07', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'vsa', 0, 0, 0),
-(5, 'Wed, Mar 11', 'DCSO Game Dinner', 'Poughkeepsie', NULL, 'vsa', 0, 0, 0),
-(6, 'Sat, Mar 14', 'Shawnee Mountain', 'Shawnee Mountain', NULL, 'vsa', 0, 0, 0),
-(7, 'Sat, Mar 21', 'NRA CCW Course', 'Veterans Sportsmens Association', NULL, 'vsa', 0, 0, 0),
-(8, 'Sat, Mar 21', 'New York State Pistol Permit Safety Course', 'Veterans Sportsmens Association', NULL, 'vsa', 0, 0, 0),
-(9, 'Sat, Apr 04', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'vsa', 0, 0, 0),
-(10, 'Sat, Apr 18', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'vsa', 0, 0, 0),
-(11, 'Sat, Apr 25', '51st Wappingers Creek Water Derby', 'Pleasant Valley', NULL, 'vsa', 0, 0, 0),
-(12, 'Sat, May 30', 'Introduction to Precision Rifle Shooting', 'Tommy Gun Warehouse', NULL, 'vsa', 0, 0, 0),
-(13, 'Sat, May 30', 'NRA Basic Rifle Course', 'Greeley', NULL, 'vsa', 0, 0, 0);
+-- Insert Events (one row per unique event)
+-- location = venue/place name; address = street address (optional)
+-- event_type = 'shredvets' → shown on BOTH VSA page and ShredVets page
+-- event_type = 'vsa' → shown only on VSA page
+INSERT INTO events (id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed) VALUES
+-- ShredVets events (on both pages)
+(1, 'Sat, Jan 31', 'Jack Frost Ski Resort', 'Jack Frost Ski Resort', '434 Jack Frost Mountain Rd, White Haven, PA 18661', 'jack-frost-jan-31', 'shredvets', 0, 0, 0),
+(2, 'Tue, Feb 03', 'Ski Windham Mountain', 'Windham Mountain', '19 Resort Dr, Windham, NY 12496', 'shredvets-windham-feb-03', 'shredvets', 0, 0, 0),
+(3, 'Thu, Feb 12', 'Ski Windham Mountain', 'Windham Mountain', '19 Resort Dr, Windham, NY 12496', 'shredvets-windham-feb-12', 'shredvets', 0, 0, 0),
+(4, 'Sun, Feb 14', 'Ski Whistler Ski Resort 2027', 'Whistler', 'Whistler, British Columbia, Canada', 'whistler-ski-resort-2027', 'shredvets', 0, 0, 0),
+(5, 'Tue, Feb 17', 'Ski Plattekill Mountain', 'Plattekill Mountain', '469 Plattekill Rd, Roxbury, NY 12474', 'shredvets-plattekill-feb-17', 'shredvets', 0, 0, 0),
+(6, 'Fri, Feb 20', 'Ski Thunder Ridge', 'Thunder Ridge', '137 Birch Hill Rd, Patterson, NY 12563', 'shredvets-thunder-ridge-feb-20', 'shredvets', 0, 0, 0),
+(7, 'Fri, Feb 27', 'Ski Plattekill Mountain', 'Plattekill Mountain', '469 Plattekill Rd, Roxbury, NY 12474', 'shredvets-plattekill-feb-27', 'shredvets', 0, 0, 0),
+(8, 'Fri, Mar 13', 'Ski Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-13', 'shredvets', 0, 0, 0),
+-- VSA-only events
+(9, 'Sat, Feb 07', 'NRA Great Outdoor Show 2026', 'Pennsylvania Farm Show Complex', '2300 N Cameron St, Harrisburg, PA', 'nra-great-outdoor-show-2026', 'vsa', 0, 0, 0),
+(10, 'Sat, Feb 07', 'Team River Runner - Kayaking Workshop', 'Montrose VA', 'Montrose VA - Pool', 'team-river-runner-kayaking-workshop-feb-07', 'vsa', 0, 0, 0),
+(11, 'Sat, Mar 07', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-mar-07', 'vsa', 0, 0, 0),
+(12, 'Wed, Mar 11', 'DCSO Game Dinner', 'Poughkeepsie', NULL, 'dcso-game-dinner-mar-11', 'vsa', 0, 0, 0),
+(13, 'Sat, Mar 14', 'Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-14', 'vsa', 0, 0, 0),
+(14, 'Sat, Mar 21', 'NRA CCW Course', 'Veterans Sportsmens Association', NULL, 'nra-ccw-course-mar-21', 'vsa', 0, 0, 0),
+(15, 'Sat, Mar 21', 'New York State Pistol Permit Safety Course', 'Veterans Sportsmens Association', NULL, 'nys-pistol-permit-safety-course-mar-21', 'vsa', 0, 0, 0),
+(16, 'Sat, Apr 04', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-04', 'vsa', 0, 0, 0),
+(17, 'Sat, Apr 18', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-18', 'vsa', 0, 0, 0),
+(18, 'Sat, Apr 25', '51st Wappingers Creek Water Derby', 'Pleasant Valley', NULL, '51st-wappingers-creek-water-derby', 'vsa', 0, 0, 0),
+(19, 'Sat, May 30', 'Introduction to Precision Rifle Shooting', 'Tommy Gun Warehouse', NULL, 'introduction-precision-rifle-shooting-may-30', 'vsa', 0, 0, 0),
+(20, 'Sat, May 30', 'NRA Basic Rifle Course', 'Greeley', NULL, 'nra-basic-rifle-course-may-30', 'vsa', 0, 0, 0);
 
--- Insert ShredVets Events
-INSERT INTO events (id, date, title, location, slug, event_type, canceled, date_changed, location_changed) VALUES
-(14, 'Sat, Jan 31', 'Jack Frost', 'Jack Frost Ski Resort', 'jack-frost-jan-31', 'shredvets', 0, 0, 0),
-(15, 'Tue, Feb 03', 'Windham Mountain', 'Windham', NULL, 'shredvets', 0, 0, 0),
-(16, 'Thu, Feb 12', 'Windham Mountain', 'Windham', NULL, 'shredvets', 0, 0, 0),
-(17, 'Tue, Feb 17', 'Plattekill Mountain', 'Plattekill mountain 469 Plattekill Road Roxbury NY 12474', NULL, 'shredvets', 0, 0, 0),
-(18, 'Fri, Feb 20', 'Thunder Ridge', 'Thunder Ridge', NULL, 'shredvets', 0, 0, 0),
-(19, 'Fri, Feb 27', 'Plattekill Mountain', 'Plattekill mountain 469 Plattekill Road Roxbury NY 12474', NULL, 'shredvets', 0, 0, 0),
-(20, 'Fri, Mar 13', 'Shawnee Mountain', 'Shawnee Mountain', NULL, 'shredvets', 0, 0, 0),
-(21, 'Sun, Feb 14', 'Whistler Ski Resort 2027', 'Whistler', NULL, 'shredvets', 0, 0, 0);
+-- Reset auto increment for events table (optional)
+-- ALTER TABLE events AUTO_INCREMENT = 21;
 
--- Reset auto increment for events table (optional - only needed if inserting with specific IDs)
--- ALTER TABLE events AUTO_INCREMENT = 22;
-
--- Insert Event Details
--- Note: details are stored as JSON array
+-- Insert Event Details (one row per event; event_id 1-20 matches events.id)
 INSERT INTO event_details (event_id, slug, subtitle, details) VALUES
-((SELECT id FROM events WHERE slug = 'jack-frost-jan-31'), 'jack-frost-jan-31', 'ShredVets Trip', 
+-- ShredVets events (ids 1-8)
+(1, 'jack-frost-jan-31', 'ShredVets Trip',
  JSON_ARRAY(
     'Join ShredVets at Jack Frost Ski Resort for a day on the slopes. This trip is free for veterans—ski or snowboard, with free equipment and lessons available when arranged in advance.',
     'Skiing ipsum dolor sit amet, carve the corduroy and lay down fresh tracks through the powder. Groomers and moguls await as you drop into the fall line. The chairlift carries you above the treeline where the snow is deep and the views are endless.',
-    'Snowboard ipsum rails and boxes in the terrain park, then cruise the blue squares back to the lodge. Hot chocolate and chili by the fire after a long run. Our instructors will help first-timers find their edges and build confidence on the mountain.',
-    'Meet at the resort base by 8:30 AM for check-in and equipment fitting. We''ll have a brief safety and run overview before heading up. Lunch is on your own at the lodge; we''ll regroup in the afternoon for optional group runs.',
-    'Registration is required. Contact ShredVets to reserve your spot and arrange free rentals if needed. Veterans, active duty, and family members welcome.'
+    'Snowboard ipsum rails and boxes in the terrain park, then cruise the blue squares back to the lodge. Hot chocolate and chili by the fire after a long run.',
+    'Meet at the resort base by 8:30 AM. Registration is required. Contact ShredVets to reserve your spot and arrange free rentals if needed.'
 )),
-((SELECT id FROM events WHERE slug = 'jack-frost-ski-resort-jan-31'), 'jack-frost-ski-resort-jan-31', 'VSA Event',
+(2, 'shredvets-windham-feb-03', 'ShredVets Trip',
  JSON_ARRAY(
-    'Join the Veterans Sportsmens Association at Jack Frost Ski Resort for a day on the slopes. This event is open to all veterans and their families.',
-    'Skiing ipsum dolor sit amet, carve the corduroy and lay down fresh tracks through the powder. Groomers and moguls await as you drop into the fall line. The chairlift carries you above the treeline where the snow is deep and the views are endless.',
-    'Snowboard ipsum rails and boxes in the terrain park, then cruise the blue squares back to the lodge. Hot chocolate and chili by the fire after a long run. Our instructors will help first-timers find their edges and build confidence on the mountain.',
-    'Meet at the resort base by 8:30 AM for check-in and equipment fitting. We''ll have a brief safety and run overview before heading up. Lunch is on your own at the lodge; we''ll regroup in the afternoon for optional group runs.',
-    'Registration is required. Contact the VSA to reserve your spot. Veterans, active duty, and family members welcome.'
+    'Join ShredVets at Windham Mountain for a day on the slopes. Free for veterans—ski or snowboard, with free equipment and lessons when arranged in advance.',
+    'Ski ipsum carve the corduroy and lay down fresh tracks. Groomers and moguls await; drop into the fall line and ride the chairlift above the treeline.',
+    'Meet at the base by 8:30 AM. Registration required. Contact ShredVets to reserve your spot.'
+)),
+(3, 'shredvets-windham-feb-12', 'ShredVets Trip',
+ JSON_ARRAY(
+    'ShredVets at Windham Mountain—free skiing and snowboarding for veterans. Equipment and lessons available when coordinated in advance.',
+    'Ski ipsum powder and groomers, moguls and fall line. Chairlift to the treeline; deep snow and long runs.',
+    'Meet at the base by 8:30 AM. Registration required. Contact ShredVets to reserve your spot.'
+)),
+(4, 'whistler-ski-resort-2027', 'ShredVets Trip',
+ JSON_ARRAY(
+    'Join ShredVets at Whistler Ski Resort for an unforgettable day on the mountain. Free for veterans—ski or snowboard, with equipment and lessons available when arranged in advance.',
+    'Ski ipsum carve the corduroy and lay down fresh tracks through the powder. Groomers and moguls await as you drop into the fall line.',
+    'Registration is required. Contact ShredVets to reserve your spot and arrange free rentals.'
+)),
+(5, 'shredvets-plattekill-feb-17', 'ShredVets Trip',
+ JSON_ARRAY(
+    'ShredVets at Plattekill Mountain—free skiing and snowboarding for veterans. Equipment and lessons when coordinated in advance.',
+    'Ski ipsum powder and groomers, moguls and fall line. Chairlift to the treeline; deep snow and long runs.',
+    'Meet at the base by 8:30 AM. Registration required. Contact ShredVets to reserve your spot.'
+)),
+(6, 'shredvets-thunder-ridge-feb-20', 'ShredVets Trip',
+ JSON_ARRAY(
+    'Join ShredVets at Thunder Ridge for a day on the slopes. Free for veterans—ski or snowboard, with free equipment and lessons when arranged in advance.',
+    'Ski ipsum carve the corduroy and lay down fresh tracks. Groomers and moguls await; drop into the fall line.',
+    'Meet at the base by 8:30 AM. Registration required. Contact ShredVets to reserve your spot.'
+)),
+(7, 'shredvets-plattekill-feb-27', 'ShredVets Trip',
+ JSON_ARRAY(
+    'ShredVets at Plattekill Mountain—free skiing and snowboarding for veterans. Equipment and lessons when coordinated in advance.',
+    'Ski ipsum powder and groomers, moguls and fall line. Terrain park rails and boxes, blue squares back to the lodge.',
+    'Meet at the base by 8:30 AM. Registration required. Contact ShredVets to reserve your spot.'
+)),
+(8, 'shawnee-mountain-mar-13', 'ShredVets Trip',
+ JSON_ARRAY(
+    'Join ShredVets at Shawnee Mountain for a day on the slopes. Free for veterans—ski or snowboard, with free equipment and lessons when arranged in advance.',
+    'Ski ipsum carve the corduroy and lay down fresh tracks. Groomers and moguls await; drop into the fall line.',
+    'Meet at the base by 8:30 AM. Registration required. Contact ShredVets to reserve your spot.'
+)),
+-- VSA-only events (ids 9-20)
+(9, 'nra-great-outdoor-show-2026', NULL,
+ JSON_ARRAY(
+    'The NRA Great Outdoor Show returns in 2026. Join the VSA and fellow veterans at 2300 N Cameron St for exhibits, demonstrations, and community.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Contact the VSA for registration and details.'
+)),
+(10, 'team-river-runner-kayaking-workshop-feb-07', 'Team River Runner',
+ JSON_ARRAY(
+    'Join Team River Runner and the VSA for a kayaking workshop at the Montrose VA Pool. Adaptive and therapeutic paddling for veterans and active duty—free of charge.',
+    'Kayaking ipsum dolor sit amet, paddle through the current and read the river. Eddies and rapids, stroke and brace.',
+    'Registration is required. Contact the VSA or Team River Runner to reserve your spot.'
+)),
+(11, 'wappingers-creek-clean-up-mar-07', NULL,
+ JSON_ARRAY(
+    'Join the VSA and Aquatic Explorers Scuba Club for the Wappingers Creek clean-up. Help maintain the creek and watershed for the community and the annual water derby.',
+    'River ipsum dolor sit amet, creek clean-up and stewardship. Canoe and kayak access; banks and riparian habitat.',
+    'Meet at the VSA office. Bring work gloves and water. Contact the VSA to register.'
+)),
+(12, 'dcso-game-dinner-mar-11', NULL,
+ JSON_ARRAY(
+    'The DCSO Game Dinner is a longstanding community event in Poughkeepsie. The VSA is proud to participate and support local veterans and first responders.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Contact the VSA for tickets and details.'
+)),
+(13, 'shawnee-mountain-mar-14', NULL,
+ JSON_ARRAY(
+    'Join the VSA at Shawnee Mountain for a day on the slopes. Open to veterans and their families.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Registration may be required. Contact the VSA for details and to reserve your spot.'
+)),
+(14, 'nra-ccw-course-mar-21', NULL,
+ JSON_ARRAY(
+    'NRA CCW Course at the Veterans Sportsmens Association. This course meets requirements for concealed carry and defensive handgun training.',
+    'Firearms ipsum dolor sit amet, safety and fundamentals. Sight alignment, trigger control, and follow-through.',
+    'Registration and fee required. Contact the VSA for dates and to reserve your spot.'
+)),
+(15, 'nys-pistol-permit-safety-course-mar-21', NULL,
+ JSON_ARRAY(
+    'New York State Pistol Permit Safety Course at the Veterans Sportsmens Association. This 18-hour course meets NYS requirements for pistol permit application and renewal.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Registration and fee required. Contact the VSA for dates and to reserve your spot.'
+)),
+(16, 'wappingers-creek-clean-up-apr-04', NULL,
+ JSON_ARRAY(
+    'Wappingers Creek clean-up with the VSA and Aquatic Explorers Scuba Club. Help prepare the creek and banks for the spring water derby.',
+    'River ipsum creek clean-up and stewardship. Meet at the VSA office. Bring work gloves and water. Contact the VSA to register.'
+)),
+(17, 'wappingers-creek-clean-up-apr-18', NULL,
+ JSON_ARRAY(
+    'Wappingers Creek clean-up with the VSA and Aquatic Explorers Scuba Club. Final prep before the water derby.',
+    'River ipsum creek clean-up and stewardship. Meet at the VSA office. Bring work gloves and water. Contact the VSA to register.'
+)),
+(18, '51st-wappingers-creek-water-derby', NULL,
+ JSON_ARRAY(
+    'The 51st Wappingers Creek Water Derby—canoe and kayak racing from Pleasant Valley. The VSA has teamed up with the Aquatic Explorers Scuba Club to bring back this annual spring event.',
+    'Kayaking ipsum dolor sit amet, paddle the creek from put-in to take-out. The race runs from Pleasant Valley through LaGrange to the Town of Poughkeepsie.',
+    'Registration required. Contact the VSA or AESC for entry and details.'
+)),
+(19, 'introduction-precision-rifle-shooting-may-30', NULL,
+ JSON_ARRAY(
+    'Introduction to Precision Rifle Shooting at Tommy Gun Warehouse. Learn fundamentals of scoped rifle marksmanship and long-range shooting.',
+    'Firearms ipsum dolor sit amet, safety and fundamentals. Sight alignment, scope use, and follow-through.',
+    'Registration and fee required. Contact the VSA for dates and to reserve your spot.'
+)),
+(20, 'nra-basic-rifle-course-may-30', NULL,
+ JSON_ARRAY(
+    'NRA Basic Rifle Course in Greeley. This course covers rifle safety, fundamentals, and range qualification. Ideal for new shooters and those seeking NRA certification.',
+    'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+    'Registration and fee required. Contact the VSA for dates and to reserve your spot.'
 ));
+
 
 -- Insert Programs
 INSERT INTO programs (id, title, description, link, url) VALUES
@@ -275,11 +382,10 @@ INSERT INTO gallery_images (id, url, alt_text, caption, display_order) VALUES
 --    You'll need to generate actual bcrypt hashes before inserting users.
 --    Use: bcrypt.hashSync('password', 10)
 --
--- 2. The events table combines both VSA and ShredVets events.
---    Use the event_type column to filter: WHERE event_type = 'vsa' or 'shredvets'
+-- 2. The events table has one row per unique event. event_type = 'shredvets' means the event appears on BOTH the VSA page and the ShredVets page; event_type = 'vsa' means VSA page only. Backend: VSA page uses WHERE event_type IN ('vsa', 'shredvets'); ShredVets page uses WHERE event_type = 'shredvets'.
 --
--- 3. Event details are stored as JSON for flexibility.
---    Query example: SELECT JSON_EXTRACT(details, '$[0]') FROM event_details WHERE slug = 'jack-frost-jan-31'
+-- 3. Event details are stored as JSON for flexibility (event_details.slug matches events.slug).
+--    Query example: SELECT JSON_EXTRACT(details, '$[0]') FROM event_details WHERE slug = 'jack-frost-ski-resort-jan-31'
 --
 -- 4. Programs use string IDs (like 'shredvets') instead of auto-increment integers.
 --    This allows for easier referencing in code.

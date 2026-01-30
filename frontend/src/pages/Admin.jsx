@@ -4,12 +4,14 @@ import Footer from "../components/Footer";
 import AdminEvents from "../components/AdminEvents";
 import AdminPrograms from "../components/AdminPrograms";
 import AdminNews from "../components/AdminNews";
+import AdminRegistrations from "../components/AdminRegistrations";
 import { useAuth } from "../contexts/AuthContext";
 import {
   fetchUsers,
   fetchEvents,
   fetchPrograms,
   fetchNews,
+  fetchRegistrations,
   updateUser,
   deleteUser,
   createEvent,
@@ -30,6 +32,7 @@ function Admin() {
   const [events, setEvents] = useState([]);
   const [programs, setPrograms] = useState([]);
   const [news, setNews] = useState([]);
+  const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
@@ -40,16 +43,18 @@ function Admin() {
       setLoading(true);
       setError(null);
       try {
-        const [u, e, p, n] = await Promise.all([
+        const [u, e, p, n, reg] = await Promise.all([
           token ? fetchUsers(token).catch(() => []) : Promise.resolve([]),
           fetchEvents().catch(() => []),
           fetchPrograms().catch(() => []),
           fetchNews().catch(() => []),
+          token ? fetchRegistrations(token).catch(() => []) : Promise.resolve([]),
         ]);
         setUsers(u);
         setEvents(e.map((ev) => ({ ...ev, status: ev.eventType || "vsa" })));
         setPrograms(p);
         setNews(n);
+        setRegistrations(reg);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -110,6 +115,7 @@ function Admin() {
         date: data.date,
         title: data.title,
         location: data.location,
+        address: data.address || null,
         slug: data.slug || null,
         eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : "vsa"),
         canceled: data.canceled,
@@ -117,6 +123,7 @@ function Admin() {
         locationChanged: data.locationChanged,
         originalDate: data.originalDate,
         originalLocation: data.originalLocation,
+        originalAddress: data.originalAddress ?? null,
       };
       const res = await updateEvent(id, payload, token);
       setEvents(events.map((event) => (event.id === id ? { ...event, ...res.event } : event)));
@@ -132,6 +139,7 @@ function Admin() {
         date: data.date,
         title: data.title,
         location: data.location,
+        address: data.address || null,
         slug: data.slug || null,
         eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : "vsa"),
         canceled: data.canceled,
@@ -139,6 +147,7 @@ function Admin() {
         locationChanged: data.locationChanged,
         originalDate: data.originalDate,
         originalLocation: data.originalLocation,
+        originalAddress: data.originalAddress ?? null,
       };
       const res = await createEvent(payload, token);
       const newEvent = { ...res.event, status: res.event.eventType || "vsa" };
@@ -271,6 +280,13 @@ function Admin() {
                 onClick={() => setActiveTab("news")}
               >
                 News
+              </button>
+              <button
+                type="button"
+                className={`admin-tab ${activeTab === "registrations" ? "active" : ""}`}
+                onClick={() => setActiveTab("registrations")}
+              >
+                Registered
               </button>
             </div>
 
@@ -429,6 +445,16 @@ function Admin() {
                 onAdd={handleNewsAdd}
                 onDelete={handleNewsDelete}
               />
+            )}
+
+            {activeTab === "registrations" && (
+              <>
+                <h2 className="section-title">Event Registrations</h2>
+                <p style={{ color: "var(--text-gray)", marginBottom: "1rem" }}>
+                  Who signed up for which event. Name and contact info from the registration form.
+                </p>
+                <AdminRegistrations registrations={registrations} events={events} />
+              </>
             )}
             </>
             )}

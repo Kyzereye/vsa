@@ -215,6 +215,12 @@ section {
   font-size: 0.9rem;
 }
 
+.event-address {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  color: var(--text-gray);
+}
+
 .event-card-link {
   display: block;
   text-decoration: none;

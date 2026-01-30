@@ -1,13 +1,15 @@
 import { useState } from "react";
+import { createRegistration } from "../api";
 
 /**
  * Reusable registration dialog for ShredVets and VSA events.
  * @param {boolean} open - Whether the dialog is visible
  * @param {function} onClose - Called when dialog should close
- * @param {object} [event] - Optional event context { title, date, location }
+ * @param {object} [event] - Optional event context { id, title, date, location } (id required to submit to backend)
  */
 function RegistrationDialog({ open, onClose, event }) {
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState(null);
   const [formData, setFormData] = useState({ name: "", email: "", phone: "", message: "" });
 
   if (!open) return null;
@@ -16,15 +18,35 @@ function RegistrationDialog({ open, onClose, event }) {
     if (e.target === e.currentTarget) onClose();
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: send to backend when available
-    setSubmitted(true);
-    setFormData({ name: "", email: "", phone: "", message: "" });
-    setTimeout(() => {
-      setSubmitted(false);
-      onClose();
-    }, 1500);
+    setError(null);
+    if (event?.id) {
+      try {
+        await createRegistration({
+          eventId: event.id,
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone || undefined,
+          message: formData.message || undefined,
+        });
+        setSubmitted(true);
+        setFormData({ name: "", email: "", phone: "", message: "" });
+        setTimeout(() => {
+          setSubmitted(false);
+          onClose();
+        }, 1500);
+      } catch (err) {
+        setError(err.message || "Failed to submit registration");
+      }
+    } else {
+      setSubmitted(true);
+      setFormData({ name: "", email: "", phone: "", message: "" });
+      setTimeout(() => {
+        setSubmitted(false);
+        onClose();
+      }, 1500);
+    }
   };
 
   const handleChange = (e) => {
@@ -37,7 +59,7 @@ function RegistrationDialog({ open, onClose, event }) {
     : "Register for an event";
 
   const subheading = event && event.date && event.location
-    ? `${event.date} · ${event.location}`
+    ? `${event.date} · ${event.location}${event.address ? ` · ${event.address}` : ""}`
     : null;
 
   return (
@@ -64,6 +86,11 @@ function RegistrationDialog({ open, onClose, event }) {
           <p className="registration-dialog-subtitle">{subheading}</p>
         )}
 
+        {error && (
+          <p className="auth-error" style={{ marginBottom: "1rem" }}>
+            {error}
+          </p>
+        )}
         {submitted ? (
           <p className="registration-dialog-success">Thanks! We&apos;ll be in touch.</p>
         ) : (
