@@ -2,10 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
-import { ExpansionPanel } from "../components";
+import { ExpansionPanel, PasswordRequirements } from "../components";
 import { useAuth } from "../contexts/AuthContext";
 import { fetchMyRegistrations, deleteRegistration } from "../api";
 import { formatPhoneDisplay } from "../utils/phone";
+import { getPasswordWithConfirmError } from "../utils/password";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3333/api";
 
@@ -128,44 +129,17 @@ function Profile() {
     }
   };
 
-  // Password requirements validation for reset password
-  const passwordRequirements = {
-    minLength: passwordData.newPassword.length >= 8,
-    hasUpperCase: /[A-Z]/.test(passwordData.newPassword),
-    hasLowerCase: /[a-z]/.test(passwordData.newPassword),
-    hasNumber: /[0-9]/.test(passwordData.newPassword),
-  };
-
-  const validatePassword = () => {
-    if (!passwordData.newPassword) {
-      return "Password is required";
-    }
-    if (passwordData.newPassword.length < 8) {
-      return "Password must be at least 8 characters";
-    }
-    if (!/[A-Z]/.test(passwordData.newPassword)) {
-      return "Password must contain at least one uppercase letter";
-    }
-    if (!/[a-z]/.test(passwordData.newPassword)) {
-      return "Password must contain at least one lowercase letter";
-    }
-    if (!/[0-9]/.test(passwordData.newPassword)) {
-      return "Password must contain at least one number";
-    }
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      return "Passwords do not match";
-    }
-    return null;
-  };
-
   const handleResetPassword = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
 
-    const passwordError = validatePassword();
+    const passwordError = getPasswordWithConfirmError(
+      passwordData.newPassword,
+      passwordData.confirmPassword
+    );
     if (passwordError) {
-      setError(passwordError);
+      setError(passwordError.message);
       return;
     }
 
@@ -561,26 +535,7 @@ function Profile() {
                         )}
                       </button>
                     </div>
-                    {passwordData.newPassword && (
-                      <div className="password-requirements">
-                        <div className={`password-requirement ${passwordRequirements.minLength ? "met" : ""}`}>
-                          <span className="requirement-icon">{passwordRequirements.minLength ? "✓" : "○"}</span>
-                          <span>At least 8 characters</span>
-                        </div>
-                        <div className={`password-requirement ${passwordRequirements.hasUpperCase ? "met" : ""}`}>
-                          <span className="requirement-icon">{passwordRequirements.hasUpperCase ? "✓" : "○"}</span>
-                          <span>At least one uppercase letter</span>
-                        </div>
-                        <div className={`password-requirement ${passwordRequirements.hasLowerCase ? "met" : ""}`}>
-                          <span className="requirement-icon">{passwordRequirements.hasLowerCase ? "✓" : "○"}</span>
-                          <span>At least one lowercase letter</span>
-                        </div>
-                        <div className={`password-requirement ${passwordRequirements.hasNumber ? "met" : ""}`}>
-                          <span className="requirement-icon">{passwordRequirements.hasNumber ? "✓" : "○"}</span>
-                          <span>At least one number</span>
-                        </div>
-                      </div>
-                    )}
+                    <PasswordRequirements password={passwordData.newPassword} />
                   </div>
 
                   <div className="auth-field">
@@ -615,9 +570,10 @@ function Profile() {
                         )}
                       </button>
                     </div>
-                    {passwordData.confirmPassword && passwordData.newPassword !== passwordData.confirmPassword && (
-                      <div className="auth-field-error">Passwords do not match</div>
-                    )}
+                    {(() => {
+                      const err = getPasswordWithConfirmError(passwordData.newPassword, passwordData.confirmPassword);
+                      return err?.field === "confirmPassword" ? <div className="auth-field-error">{err.message}</div> : null;
+                    })()}
                   </div>
 
                   <button

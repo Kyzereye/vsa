@@ -4,6 +4,8 @@ import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import { useAuth } from "../contexts/AuthContext";
 import { formatPhoneDisplay } from "../utils/phone";
+import { getPasswordWithConfirmError } from "../utils/password";
+import { PasswordRequirements } from "../components";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -20,14 +22,6 @@ function Register() {
   const [showVerificationDialog, setShowVerificationDialog] = useState(false);
   const navigate = useNavigate();
   const { register } = useAuth();
-
-  // Password requirements validation
-  const passwordRequirements = {
-    minLength: formData.password.length >= 8,
-    hasUpperCase: /[A-Z]/.test(formData.password),
-    hasLowerCase: /[a-z]/.test(formData.password),
-    hasNumber: /[0-9]/.test(formData.password),
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,20 +49,9 @@ function Register() {
       newErrors.email = "Invalid email format";
     }
 
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    } else if (!/[A-Z]/.test(formData.password)) {
-      newErrors.password = "Password must contain at least one uppercase letter";
-    } else if (!/[a-z]/.test(formData.password)) {
-      newErrors.password = "Password must contain at least one lowercase letter";
-    } else if (!/[0-9]/.test(formData.password)) {
-      newErrors.password = "Password must contain at least one number";
-    }
-
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
+    const passwordError = getPasswordWithConfirmError(formData.password, formData.confirmPassword);
+    if (passwordError) {
+      newErrors[passwordError.field] = passwordError.message;
     }
 
     setErrors(newErrors);
@@ -204,27 +187,7 @@ function Register() {
                     </button>
                   </div>
                   {errors.password && <div className="auth-field-error">{errors.password}</div>}
-                  
-                  {formData.password && (
-                    <div className="password-requirements">
-                      <div className={`password-requirement ${passwordRequirements.minLength ? "met" : ""}`}>
-                        <span className="requirement-icon">{passwordRequirements.minLength ? "✓" : "○"}</span>
-                        <span>At least 8 characters</span>
-                      </div>
-                      <div className={`password-requirement ${passwordRequirements.hasUpperCase ? "met" : ""}`}>
-                        <span className="requirement-icon">{passwordRequirements.hasUpperCase ? "✓" : "○"}</span>
-                        <span>At least one uppercase letter</span>
-                      </div>
-                      <div className={`password-requirement ${passwordRequirements.hasLowerCase ? "met" : ""}`}>
-                        <span className="requirement-icon">{passwordRequirements.hasLowerCase ? "✓" : "○"}</span>
-                        <span>At least one lowercase letter</span>
-                      </div>
-                      <div className={`password-requirement ${passwordRequirements.hasNumber ? "met" : ""}`}>
-                        <span className="requirement-icon">{passwordRequirements.hasNumber ? "✓" : "○"}</span>
-                        <span>At least one number</span>
-                      </div>
-                    </div>
-                  )}
+                  <PasswordRequirements password={formData.password} />
                 </div>
 
                 <div className="auth-field">

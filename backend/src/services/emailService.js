@@ -128,7 +128,7 @@ export const sendVerificationEmail = async (email, name, verificationToken) => {
 };
 
 export const sendEmailChangeVerificationEmail = async (email, name, verificationToken) => {
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:2222";
   const verificationLink = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
   const mailOptions = {
@@ -232,7 +232,7 @@ export const sendEmailChangeVerificationEmail = async (email, name, verification
 };
 
 export const sendPasswordResetEmail = async (email, name, resetToken) => {
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:2222";
   const resetLink = `${frontendUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
 
   const mailOptions = {

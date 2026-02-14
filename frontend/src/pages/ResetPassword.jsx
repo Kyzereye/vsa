@@ -3,6 +3,8 @@ import { Link, useSearchParams } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import { resetPassword } from "../api";
+import { getPasswordWithConfirmError } from "../utils/password";
+import { PasswordRequirements } from "../components";
 
 function ResetPassword() {
   const [searchParams] = useSearchParams();
@@ -13,6 +15,7 @@ function ResetPassword() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   useEffect(() => {
     if (!token) {
@@ -24,12 +27,9 @@ function ResetPassword() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setMessage("");
-    if (password.length < 6) {
-      setMessage("Password must be at least 6 characters.");
-      return;
-    }
-    if (password !== confirmPassword) {
-      setMessage("Passwords do not match.");
+    const error = getPasswordWithConfirmError(password, confirmPassword);
+    if (error) {
+      setMessage(error.message);
       return;
     }
     setLoading(true);
@@ -71,11 +71,11 @@ function ResetPassword() {
                         name="password"
                         type={showPassword ? "text" : "password"}
                         required
-                        minLength={6}
+                        minLength={8}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         className="auth-input"
-                        placeholder="At least 6 characters"
+                        placeholder="Enter your password"
                       />
                       <button
                         type="button"
@@ -96,20 +96,47 @@ function ResetPassword() {
                         )}
                       </button>
                     </div>
+                    <PasswordRequirements password={password} />
                   </div>
                   <div className="auth-field">
                     <label htmlFor="confirmPassword">Confirm new password *</label>
-                    <input
-                      id="confirmPassword"
-                      name="confirmPassword"
-                      type="password"
-                      required
-                      minLength={6}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      className="auth-input"
-                      placeholder="Re-enter new password"
-                    />
+                    <div className="password-input-wrapper">
+                      <input
+                        id="confirmPassword"
+                        name="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        required
+                        minLength={8}
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        className="auth-input"
+                        placeholder="Confirm your password"
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                      >
+                        {showConfirmPassword ? (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                            <line x1="1" y1="1" x2="23" y2="23"></line>
+                          </svg>
+                        ) : (
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                        )}
+                      </button>
+                    </div>
+                    {confirmPassword && (
+                      <div className={`password-confirm-hint ${password === confirmPassword ? "match" : "no-match"}`}>
+                        <span className="requirement-icon">{password === confirmPassword ? "✓" : "○"}</span>
+                        <span>{password === confirmPassword ? "Passwords match" : "Passwords do not match"}</span>
+                      </div>
+                    )}
                   </div>
                   <button
                     type="submit"

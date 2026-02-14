@@ -62,7 +62,11 @@ export async function resetPassword(token, newPassword) {
 export async function fetchEvents(eventType, options = {}) {
   const params = new URLSearchParams();
   if (eventType) params.set("event_type", eventType);
-  if (options.past) params.set("time", "past");
+  if (options.past) {
+    params.set("time", "past");
+  } else if (eventType) {
+    params.set("time", "upcoming");
+  }
   const url = `${API_BASE}/events${params.toString() ? `?${params.toString()}` : ""}`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Failed to fetch events");

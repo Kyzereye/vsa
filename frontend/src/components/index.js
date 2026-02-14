@@ -10,6 +10,7 @@ export { default as Contact } from "./Contact";
 export { default as Footer } from "./Footer";
 export { default as RegistrationDialog } from "./RegistrationDialog";
 export { default as ScrollToTop } from "./ScrollToTop";
+export { default as PasswordRequirements } from "./PasswordRequirements";
 export { default as ProtectedRoute } from "./ProtectedRoute";
 export { default as AdminEvents } from "./AdminEvents";
 export { default as AdminPrograms } from "./AdminPrograms";

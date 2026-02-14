@@ -216,8 +216,17 @@ export const resetPassword = async (req, res) => {
     if (!token || !token.trim()) {
       return res.status(400).json({ message: "Reset token is required" });
     }
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters" });
+    }
+    if (!/[A-Z]/.test(newPassword)) {
+      return res.status(400).json({ message: "Password must contain at least one uppercase letter" });
+    }
+    if (!/[a-z]/.test(newPassword)) {
+      return res.status(400).json({ message: "Password must contain at least one lowercase letter" });
+    }
+    if (!/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "Password must contain at least one number" });
     }
 
     const userId = await verifyResetToken(token.trim());

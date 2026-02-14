@@ -5,12 +5,12 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 1rem 0;
+  padding: 0.4rem 0;
 }
 
 .nav-container {
   width: 100%;
-  padding: 0 4.0rem; 
+  padding: 0 1rem; 
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -18,7 +18,7 @@
 }
 
 .nav-logo {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: bold;
   color: var(--primary-red);
   text-decoration: none;
@@ -33,15 +33,15 @@
 .nav-menu-toggle {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.2rem;
   background: none;
   border: none;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   color: var(--dark-gray);
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
   font-family: inherit;
 }
 
@@ -51,7 +51,7 @@
 }
 
 .nav-menu-icon {
-  font-size: 1.25rem;
+  font-size: 0.9rem;
   line-height: 1;
 }
 
@@ -62,15 +62,15 @@
 .nav-dropdown-trigger {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.2rem;
   background: none;
   border: none;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   cursor: pointer;
   color: var(--dark-gray);
-  padding: 0.5rem 0.75rem;
-  border-radius: 6px;
+  padding: 0.25rem 0.4rem;
+  border-radius: 4px;
   font-family: inherit;
 }
 
@@ -111,7 +111,7 @@
 .nav-dropdown-item {
   display: block;
   width: 100%;
-  padding: 0.5rem 1rem;
+  padding: 0.25rem 0.5rem;
   color: var(--dark-gray);
   font-weight: 500;
   text-decoration: none;
@@ -119,7 +119,7 @@
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   cursor: pointer;
 }
 
@@ -139,7 +139,7 @@
   left: 0;
   right: 0;
   background: var(--white);
-  padding: 1rem 2rem;
+  padding: 0.4rem 0.75rem;
   box-shadow: var(--shadow-lg);
   z-index: 99;
 }
@@ -172,13 +172,13 @@
 .hero {
   background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-gray) 100%);
   color: var(--white);
-  padding: 6rem 2rem;
+  padding: 1.5rem 0.75rem;
   text-align: center;
 }
 
 /* Reduced padding for auth pages (Login, Register, Profile) */
 .hero-auth {
-  padding: 3.06rem 2rem;
+  padding: 1rem 0.75rem;
 }
 
 .hero-content {
@@ -187,14 +187,14 @@
 }
 
 .hero h1 {
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  font-size: 1.25rem;
+  margin-bottom: 0.4rem;
   font-weight: 700;
 }
 
 .hero p {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
+  font-size: 0.8125rem;
+  margin-bottom: 0.6rem;
   opacity: 0.9;
 }
 
@@ -202,8 +202,9 @@
   display: inline-block;
   background: var(--primary-red);
   color: var(--white);
-  padding: 1rem 2rem;
-  border-radius: 5px;
+  padding: 0.35rem 0.65rem;
+  border-radius: 4px;
+  font-size: 0.8125rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -221,42 +222,51 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 0.75rem;
 }
 
 section {
-  padding: 4rem 0;
+  padding: 1.25rem 0;
+}
+
+/* Prevent sticky nav from covering section headings when linking from menu */
+#events,
+#about,
+#programs,
+#news,
+#contact {
+  scroll-margin-top: 5rem;
 }
 
 .section-title {
   text-align: center;
-  font-size: 2.5rem;
+  font-size: 1rem;
   color: var(--primary-blue);
-  margin-bottom: 3rem;
+  margin-bottom: 0.9rem;
   position: relative;
 }
 
 .section-title::after {
   content: "";
   display: block;
-  width: 80px;
-  height: 4px;
+  width: 40px;
+  height: 2px;
   background: var(--primary-red);
-  margin: 1rem auto;
+  margin: 0.35rem auto;
 }
 
 /* Cards */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
 }
 
 .card {
   background: var(--white);
-  border-radius: 10px;
-  padding: 2rem;
+  border-radius: 8px;
+  padding: 0.65rem;
   box-shadow: var(--shadow);
   transition: transform 0.3s, box-shadow 0.3s;
 }
@@ -279,20 +289,21 @@ section {
 
 .card h3 {
   color: var(--primary-blue);
-  margin-bottom: 1rem;
-  font-size: 1.5rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.9375rem;
 }
 
 .card p {
   color: var(--text-gray);
-  margin-bottom: 1rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.8125rem;
 }
 
 /* Events */
 .events-list {
   display: grid;
-  gap: 1.5rem;
-  margin-top: 2rem;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
 }
 
 .events-list-grid {
@@ -301,9 +312,9 @@ section {
 
 .event-card {
   background: var(--light-gray);
-  padding: 1.5rem;
-  border-radius: 8px;
-  border-left: 4px solid var(--primary-red);
+  padding: 0.5rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-red);
   transition: transform 0.3s;
 }
 
@@ -314,23 +325,24 @@ section {
 .event-date {
   color: var(--primary-red);
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.8125rem;
 }
 
 .event-title {
   color: var(--primary-blue);
-  font-size: 1.25rem;
-  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  margin-bottom: 0.2rem;
 }
 
 .event-location {
   color: var(--text-gray);
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 .event-address {
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
+  font-size: 0.7rem;
+  margin-top: 0.15rem;
   color: var(--text-gray);
 }
 
@@ -351,8 +363,9 @@ section {
 }
 
 .event-detail-content p {
-  margin-bottom: 1.25rem;
-  line-height: 1.75;
+  margin-bottom: 0.65rem;
+  line-height: 1.6;
+  font-size: 0.8125rem;
   color: var(--text-gray);
 }
 
@@ -360,8 +373,8 @@ section {
 .meetings-list {
   display: flex;
   flex-direction: column;
-  gap: 1.25rem;
-  margin-top: 2rem;
+  gap: 0.5rem;
+  margin-top: 0.65rem;
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
@@ -369,44 +382,44 @@ section {
 
 .meeting-card {
   background: var(--light-gray);
-  padding: 1.5rem;
-  border-radius: 8px;
-  border-left: 4px solid var(--primary-blue);
+  padding: 0.5rem;
+  border-radius: 6px;
+  border-left: 3px solid var(--primary-blue);
 }
 
 .meeting-date {
-  font-size: 0.95rem;
+  font-size: 0.75rem;
   color: var(--primary-blue);
   font-weight: 600;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.2rem;
 }
 
 .meeting-title {
-  font-size: 1.1rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--dark-gray);
 }
 
 .meeting-location {
-  margin-top: 0.5rem;
+  margin-top: 0.25rem;
 }
 
 .meeting-location-badge {
   display: inline-block;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.85rem;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.7rem;
   font-weight: 600;
   background: var(--primary-blue);
   color: white;
-  border-radius: 4px;
+  border-radius: 3px;
 }
 
 /* Gallery */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1rem;
-  margin-top: 2rem;
+  gap: 0.4rem;
+  margin-top: 0.65rem;
 }
 
 .gallery img {
@@ -430,34 +443,36 @@ section {
 }
 
 .about-content p {
-  font-size: 1.1rem;
-  margin-bottom: 1.5rem;
-  line-height: 1.8;
+  font-size: 0.8125rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
 }
 
 /* Contact */
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin-top: 2rem;
+  gap: 0.65rem;
+  margin-top: 0.65rem;
 }
 
 .contact-card {
   background: var(--light-gray);
-  padding: 2rem;
-  border-radius: 10px;
+  padding: 0.65rem;
+  border-radius: 8px;
   text-align: center;
 }
 
 .contact-card h3 {
   color: var(--primary-blue);
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.875rem;
 }
 
 .contact-card p {
   color: var(--text-gray);
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.2rem;
+  font-size: 0.8125rem;
 }
 
 .contact-card a {
@@ -468,8 +483,9 @@ section {
 .footer {
   background: var(--dark-gray);
   color: var(--white);
-  padding: 3rem 2rem;
+  padding: 1rem 0.75rem;
   text-align: center;
+  font-size: 0.8125rem;
 }
 
 .footer-content {
@@ -480,8 +496,8 @@ section {
 .footer-links {
   display: flex;
   justify-content: center;
-  gap: 2rem;
-  margin: 2rem 0;
+  gap: 0.65rem;
+  margin: 0.65rem 0;
   flex-wrap: wrap;
 }
 
@@ -496,7 +512,7 @@ section {
 }
 
 .footer-tagline {
-  margin-top: 2rem;
+  margin-top: 0.65rem;
   opacity: 0.8;
 }
 
@@ -536,27 +552,27 @@ section {
 
 .registration-dialog {
   background: var(--white);
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: var(--shadow-lg);
-  max-width: 480px;
+  max-width: 380px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 2rem;
+  padding: 0.75rem;
   position: relative;
 }
 
 .registration-dialog-close {
   position: absolute;
-  top: 1rem;
-  right: 1rem;
+  top: 0.4rem;
+  right: 0.4rem;
   background: none;
   border: none;
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   line-height: 1;
   color: var(--text-gray);
   cursor: pointer;
-  padding: 0.25rem;
+  padding: 0.15rem;
   transition: color 0.2s;
 }
 
@@ -565,23 +581,24 @@ section {
 }
 
 .registration-dialog-title {
-  font-size: 1.5rem;
+  font-size: 1rem;
   color: var(--primary-blue);
-  margin-bottom: 0.5rem;
-  padding-right: 2rem;
+  margin-bottom: 0.2rem;
+  padding-right: 1.5rem;
 }
 
 .registration-dialog-subtitle {
   color: var(--text-gray);
-  font-size: 0.95rem;
-  margin-bottom: 1.5rem;
+  font-size: 0.8125rem;
+  margin-bottom: 0.5rem;
 }
 
 .registration-dialog-success {
   color: var(--primary-blue);
   font-weight: 600;
-  padding: 2rem 0;
+  padding: 0.65rem 0;
   text-align: center;
+  font-size: 0.8125rem;
 }
 
 .registration-dialog-form {
@@ -694,15 +711,15 @@ section {
   }
 
   .hero h1 {
-    font-size: 2rem;
-  }
-
-  .hero p {
     font-size: 1rem;
   }
 
+  .hero p {
+    font-size: 0.75rem;
+  }
+
   .section-title {
-    font-size: 2rem;
+    font-size: 0.9375rem;
   }
 
   .card-grid {
@@ -723,7 +740,7 @@ section {
 /* Admin Styles */
 .admin-table-container {
   overflow-x: auto;
-  margin-top: 2rem;
+  margin-top: 0.65rem;
 }
 
 .admin-table {
@@ -872,18 +889,18 @@ section {
 /* Admin Tabs */
 .admin-tabs {
   display: flex;
-  gap: 0.5rem;
-  margin-bottom: 2rem;
-  border-bottom: 2px solid var(--light-gray);
+  gap: 0.25rem;
+  margin-bottom: 0.65rem;
+  border-bottom: 1px solid var(--light-gray);
 }
 
 .admin-tab {
-  padding: 0.75rem 1.5rem;
+  padding: 0.3rem 0.5rem;
   background: none;
   border: none;
-  border-bottom: 3px solid transparent;
+  border-bottom: 2px solid transparent;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: var(--text-gray);
   cursor: pointer;
@@ -902,14 +919,15 @@ section {
 /* Admin Form Card */
 .admin-form-card {
   background: var(--light-gray);
-  padding: 1.5rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
+  padding: 0.5rem;
+  border-radius: 6px;
+  margin-bottom: 0.65rem;
 }
 
 .admin-form-card h4 {
   color: var(--primary-blue);
-  margin-bottom: 1rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.875rem;
 }
 
 .admin-form-grid {
@@ -987,36 +1005,36 @@ section {
 
 /* Auth Forms */
 .auth-form-container {
-  max-width: 480px;
+  max-width: 380px;
   margin: 0 auto;
 }
 
 .auth-form {
   background: var(--white);
-  padding: 2rem;
-  border-radius: 10px;
+  padding: 0.75rem;
+  border-radius: 8px;
   box-shadow: var(--shadow-lg);
 }
 
 .auth-field {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.5rem;
 }
 
 .auth-field label {
   display: block;
   font-weight: 500;
   color: var(--dark-gray);
-  margin-bottom: 0.5rem;
-  font-size: 0.95rem;
+  margin-bottom: 0.2rem;
+  font-size: 0.8125rem;
 }
 
 .auth-input {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.35rem 0.5rem;
   border: 1px solid var(--light-gray);
-  border-radius: 5px;
+  border-radius: 4px;
   font-family: inherit;
-  font-size: 1rem;
+  font-size: 0.8125rem;
   color: var(--dark-gray);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -1068,21 +1086,21 @@ section {
 .auth-error {
   background: #fee;
   color: var(--primary-red);
-  padding: 0.75rem;
-  border-radius: 5px;
-  margin-bottom: 1rem;
+  padding: 0.35rem;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
   border: 1px solid var(--primary-red);
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 .auth-success {
   background: #efe;
   color: #2d5016;
-  padding: 0.75rem;
-  border-radius: 5px;
-  margin-bottom: 1rem;
+  padding: 0.35rem;
+  border-radius: 4px;
+  margin-bottom: 0.4rem;
   border: 1px solid #4caf50;
-  font-size: 0.9rem;
+  font-size: 0.75rem;
 }
 
 .auth-input-error {
@@ -1097,18 +1115,18 @@ section {
 
 /* Password Requirements */
 .password-requirements {
-  margin-top: 0.75rem;
-  padding: 0.75rem;
+  margin-top: 0.4rem;
+  padding: 0.4rem;
   background: #f8f9fa;
-  border-radius: 5px;
-  font-size: 0.85rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
 }
 
 .password-requirement {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.5rem;
+  gap: 0.3rem;
+  margin-bottom: 0.25rem;
   color: var(--text-gray);
 }
 
@@ -1129,6 +1147,33 @@ section {
 
 .password-requirement.met .requirement-icon {
   color: #4caf50;
+}
+
+.password-confirm-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--text-gray);
+}
+
+.password-confirm-hint .requirement-icon {
+  font-weight: bold;
+  width: 1.2rem;
+  flex-shrink: 0;
+}
+
+.password-confirm-hint.match {
+  color: #2d5016;
+}
+
+.password-confirm-hint.match .requirement-icon {
+  color: #4caf50;
+}
+
+.password-confirm-hint.no-match .requirement-icon {
+  color: var(--primary-red);
 }
 
 /* Spinner for loading states */
@@ -1154,17 +1199,17 @@ section {
 
 .profile-section {
   background: var(--white);
-  padding: 2rem;
-  border-radius: 10px;
+  padding: 0.65rem;
+  border-radius: 8px;
   box-shadow: var(--shadow-lg);
-  margin-bottom: 2rem;
+  margin-bottom: 0.65rem;
 }
 
 .profile-section h2 {
   margin-top: 0;
-  margin-bottom: 1.5rem;
+  margin-bottom: 0.5rem;
   color: var(--dark-gray);
-  font-size: 1.5rem;
+  font-size: 0.9375rem;
 }
 
 .profile-section-danger {
@@ -1188,14 +1233,14 @@ section {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: 1rem 1.25rem;
+  padding: 0.4rem 0.5rem;
   border: none;
   background: transparent;
   cursor: pointer;
   text-align: left;
   font: inherit;
   color: var(--dark-gray);
-  gap: 0.75rem;
+  gap: 0.35rem;
   transition: background 0.15s ease;
 }
 
@@ -1209,13 +1254,13 @@ section {
 
 .expansion-panel-title {
   flex: 1;
-  font-size: 1.25rem;
+  font-size: 0.875rem;
   font-weight: 600;
   margin: 0;
 }
 
 .expansion-panel-summary {
-  font-size: 0.9rem;
+  font-size: 0.75rem;
   color: var(--text-gray);
   font-weight: normal;
 }

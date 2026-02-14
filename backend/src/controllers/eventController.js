@@ -64,6 +64,8 @@ export const getEvents = async (req, res) => {
 
     if (time === "past") {
       conditions.push("DATE(date) < CURDATE()");
+    } else if (time === "upcoming") {
+      conditions.push("DATE(date) >= CURDATE()");
     }
 
     if (conditions.length > 0) {

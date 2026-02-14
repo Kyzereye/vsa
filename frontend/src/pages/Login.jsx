@@ -103,12 +103,6 @@ function Login() {
                   </div>
                 </div>
 
-                <p style={{ textAlign: "right", marginTop: "0.5rem" }}>
-                  <Link to="/forgot-password" style={{ color: "var(--primary-red)", fontSize: "0.95rem" }}>
-                    Forgot password?
-                  </Link>
-                </p>
-
                 <button
                   type="submit"
                   className="cta-button"
@@ -117,6 +111,12 @@ function Login() {
                 >
                   {loading ? "Logging in..." : "Login"}
                 </button>
+
+                <p style={{ textAlign: "center", marginTop: "1rem" }}>
+                  <Link to="/forgot-password" style={{ color: "var(--primary-red)", fontSize: "0.95rem" }}>
+                    Forgot password?
+                  </Link>
+                </p>
 
                 <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
                   Don&apos;t have an account?{" "}
