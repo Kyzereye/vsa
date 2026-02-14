@@ -229,6 +229,16 @@ function Nav() {
               )}
             </li>
           ))}
+          <li>
+            <Link to="/past-events" onClick={closeAll}>
+              Past Events
+            </Link>
+          </li>
+          <li>
+            <Link to="/meetings" onClick={closeAll}>
+              Organizational Meetings
+            </Link>
+          </li>
         </ul>
       </div>
     </nav>

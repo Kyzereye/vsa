@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatPhoneDisplay } from "../utils/phone";
 
 function AdminRegistrations({ registrations = [], events = [] }) {
   const [eventFilter, setEventFilter] = useState(""); // "" = all events
@@ -75,7 +76,7 @@ function AdminRegistrations({ registrations = [], events = [] }) {
                   <td>
                     <a href={`mailto:${r.email}`}>{r.email}</a>
                   </td>
-                  <td>{r.phone || "—"}</td>
+                  <td>{r.phone ? formatPhoneDisplay(r.phone) : "—"}</td>
                   <td style={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }} title={r.message || ""}>
                     {r.message || "—"}
                   </td>

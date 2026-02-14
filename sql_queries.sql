@@ -13,6 +13,7 @@ USE VSA;
 -- Note: Drop tables with foreign keys first, then the tables they reference
 DROP TABLE IF EXISTS event_registrations;
 DROP TABLE IF EXISTS event_details;
+DROP TABLE IF EXISTS password_reset_tokens;
 DROP TABLE IF EXISTS email_verifications;
 DROP TABLE IF EXISTS gallery_images;
 DROP TABLE IF EXISTS news;
@@ -50,18 +51,15 @@ CREATE INDEX idx_users_email_verified ON users(email_verified);
 -- Use event_type to distinguish: 'vsa' or 'shredvets'
 CREATE TABLE IF NOT EXISTS events (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    date VARCHAR(50) NOT NULL,
+    date TIMESTAMP NOT NULL,
     title VARCHAR(255) NOT NULL,
     location VARCHAR(255) NOT NULL,
     address VARCHAR(255),
     slug VARCHAR(255) UNIQUE,
-    event_type ENUM('vsa', 'shredvets') NOT NULL DEFAULT 'vsa',
-    canceled TINYINT(1) NOT NULL DEFAULT 0,
-    date_changed TINYINT(1) NOT NULL DEFAULT 0,
-    location_changed TINYINT(1) NOT NULL DEFAULT 0,
-    original_date VARCHAR(50),
-    original_location VARCHAR(255),
-    original_address VARCHAR(255),
+    event_type ENUM('vsa', 'shredvets', 'org') NOT NULL DEFAULT 'vsa',
+    canceled BOOLEAN NOT NULL DEFAULT FALSE,
+    date_changed BOOLEAN NOT NULL DEFAULT FALSE,
+    location_changed BOOLEAN NOT NULL DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -125,10 +123,13 @@ CREATE TABLE IF NOT EXISTS gallery_images (
     alt_text VARCHAR(255),
     caption VARCHAR(500),
     display_order INT DEFAULT 0,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    event_id INT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_gallery_display_order ON gallery_images(display_order);
+CREATE INDEX idx_gallery_event_id ON gallery_images(event_id);
 
 -- ============================================
 -- EMAIL VERIFICATIONS TABLE
@@ -147,6 +148,20 @@ CREATE TABLE IF NOT EXISTS email_verifications (
 CREATE INDEX idx_verifications_token ON email_verifications(token);
 CREATE INDEX idx_verifications_user_id ON email_verifications(user_id);
 CREATE INDEX idx_verifications_expires_at ON email_verifications(expires_at);
+
+-- ============================================
+-- PASSWORD RESET TOKENS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+CREATE INDEX idx_password_reset_token ON password_reset_tokens(token);
+CREATE INDEX idx_password_reset_expires ON password_reset_tokens(expires_at);
 
 -- ============================================
 -- EVENT REGISTRATIONS TABLE
@@ -179,7 +194,8 @@ CREATE INDEX idx_registrations_email ON event_registrations(email);
 -- Default admin: admin@vsa.org / admin123
 -- Default member: john@example.com / password123
 INSERT INTO users (id, name, email, phone, password_hash, role, status, join_date, email_opt_in, email_verified) VALUES
-(1, 'Jeff Kyzer', 'kyzereye@gmail.com', '(555) 123-4567', '$2a$10$ySjXwMRQOPyV5PqXtL6AruOWuDElPMmb253CJUJtEUbOEL/5zx5.W', 'admin', 'active', '2024-01-01', 0, 1);
+(1, 'Jeff Kyzer', 'kyzereye@gmail.com', '3038174277', '$2a$10$ySjXwMRQOPyV5PqXtL6AruOWuDElPMmb253CJUJtEUbOEL/5zx5.W', 'admin', 'active', '2024-01-01', 0, 1),
+(2, 'Noel Dillon', 'n.dillon@holtec.com', '8455195619', '$2a$10$BVNOhsbKRd/V.LpqpmkvJeT84aZ9.c0HyvdK9Bv43oWw9IWJdiGAy', 'admin', 'active', '2024-01-31', 0, 1);
 
 -- Reset auto increment for users table (optional - only needed if inserting with specific IDs)
 -- Note: MySQL doesn't allow subqueries in ALTER TABLE, so set manually if needed
@@ -189,32 +205,40 @@ INSERT INTO users (id, name, email, phone, password_hash, role, status, join_dat
 -- location = venue/place name; address = street address (optional)
 -- event_type = 'shredvets' → shown on BOTH VSA page and ShredVets page
 -- event_type = 'vsa' → shown only on VSA page
+-- date stored as TIMESTAMP (YYYY-MM-DD HH:MM:SS)
 INSERT INTO events (id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed) VALUES
 -- ShredVets events (on both pages)
-(1, 'Sat, Jan 31', 'Jack Frost Ski Resort', 'Jack Frost Ski Resort', '434 Jack Frost Mountain Rd, White Haven, PA 18661', 'jack-frost-jan-31', 'shredvets', 0, 0, 0),
-(2, 'Tue, Feb 03', 'Ski Windham Mountain', 'Windham Mountain', '19 Resort Dr, Windham, NY 12496', 'shredvets-windham-feb-03', 'shredvets', 0, 0, 0),
-(3, 'Thu, Feb 12', 'Ski Windham Mountain', 'Windham Mountain', '19 Resort Dr, Windham, NY 12496', 'shredvets-windham-feb-12', 'shredvets', 0, 0, 0),
-(4, 'Sun, Feb 14', 'Ski Whistler Ski Resort 2027', 'Whistler', 'Whistler, British Columbia, Canada', 'whistler-ski-resort-2027', 'shredvets', 0, 0, 0),
-(5, 'Tue, Feb 17', 'Ski Plattekill Mountain', 'Plattekill Mountain', '469 Plattekill Rd, Roxbury, NY 12474', 'shredvets-plattekill-feb-17', 'shredvets', 0, 0, 0),
-(6, 'Fri, Feb 20', 'Ski Thunder Ridge', 'Thunder Ridge', '137 Birch Hill Rd, Patterson, NY 12563', 'shredvets-thunder-ridge-feb-20', 'shredvets', 0, 0, 0),
-(7, 'Fri, Feb 27', 'Ski Plattekill Mountain', 'Plattekill Mountain', '469 Plattekill Rd, Roxbury, NY 12474', 'shredvets-plattekill-feb-27', 'shredvets', 0, 0, 0),
-(8, 'Fri, Mar 13', 'Ski Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-13', 'shredvets', 0, 0, 0),
+(1, '2026-01-31 00:00:00', 'Jack Frost Ski Resort', 'Jack Frost Ski Resort', '434 Jack Frost Mountain Rd, White Haven, PA 18661', 'jack-frost-jan-31', 'shredvets', FALSE, FALSE, FALSE),
+(2, '2026-02-03 00:00:00', 'Ski Windham Mountain', 'Windham Mountain', '19 Resort Dr, Windham, NY 12496', 'shredvets-windham-feb-03', 'shredvets', FALSE, FALSE, FALSE),
+(3, '2026-02-12 00:00:00', 'Ski Windham Mountain', 'Windham Mountain', '19 Resort Dr, Windham, NY 12496', 'shredvets-windham-feb-12', 'shredvets', FALSE, FALSE, FALSE),
+(4, '2026-02-14 00:00:00', 'Ski Whistler Ski Resort 2027', 'Whistler', 'Whistler, British Columbia, Canada', 'whistler-ski-resort-2027', 'shredvets', FALSE, FALSE, FALSE),
+(5, '2026-02-17 00:00:00', 'Ski Plattekill Mountain', 'Plattekill Mountain', '469 Plattekill Rd, Roxbury, NY 12474', 'shredvets-plattekill-feb-17', 'shredvets', FALSE, FALSE, FALSE),
+(6, '2026-02-20 00:00:00', 'Ski Thunder Ridge', 'Thunder Ridge', '137 Birch Hill Rd, Patterson, NY 12563', 'shredvets-thunder-ridge-feb-20', 'shredvets', FALSE, FALSE, FALSE),
+(7, '2026-02-27 00:00:00', 'Ski Plattekill Mountain', 'Plattekill Mountain', '469 Plattekill Rd, Roxbury, NY 12474', 'shredvets-plattekill-feb-27', 'shredvets', FALSE, FALSE, FALSE),
+(8, '2026-03-13 00:00:00', 'Ski Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-13', 'shredvets', FALSE, FALSE, FALSE),
 -- VSA-only events
-(9, 'Sat, Feb 07', 'NRA Great Outdoor Show 2026', 'Pennsylvania Farm Show Complex', '2300 N Cameron St, Harrisburg, PA', 'nra-great-outdoor-show-2026', 'vsa', 0, 0, 0),
-(10, 'Sat, Feb 07', 'Team River Runner - Kayaking Workshop', 'Montrose VA', 'Montrose VA - Pool', 'team-river-runner-kayaking-workshop-feb-07', 'vsa', 0, 0, 0),
-(11, 'Sat, Mar 07', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-mar-07', 'vsa', 0, 0, 0),
-(12, 'Wed, Mar 11', 'DCSO Game Dinner', 'Poughkeepsie', NULL, 'dcso-game-dinner-mar-11', 'vsa', 0, 0, 0),
-(13, 'Sat, Mar 14', 'Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-14', 'vsa', 0, 0, 0),
-(14, 'Sat, Mar 21', 'NRA CCW Course', 'Veterans Sportsmens Association', NULL, 'nra-ccw-course-mar-21', 'vsa', 0, 0, 0),
-(15, 'Sat, Mar 21', 'New York State Pistol Permit Safety Course', 'Veterans Sportsmens Association', NULL, 'nys-pistol-permit-safety-course-mar-21', 'vsa', 0, 0, 0),
-(16, 'Sat, Apr 04', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-04', 'vsa', 0, 0, 0),
-(17, 'Sat, Apr 18', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-18', 'vsa', 0, 0, 0),
-(18, 'Sat, Apr 25', '51st Wappingers Creek Water Derby', 'Pleasant Valley', NULL, '51st-wappingers-creek-water-derby', 'vsa', 0, 0, 0),
-(19, 'Sat, May 30', 'Introduction to Precision Rifle Shooting', 'Tommy Gun Warehouse', NULL, 'introduction-precision-rifle-shooting-may-30', 'vsa', 0, 0, 0),
-(20, 'Sat, May 30', 'NRA Basic Rifle Course', 'Greeley', NULL, 'nra-basic-rifle-course-may-30', 'vsa', 0, 0, 0);
+(9, '2026-02-07 00:00:00', 'NRA Great Outdoor Show 2026', 'Pennsylvania Farm Show Complex', '2300 N Cameron St, Harrisburg, PA', 'nra-great-outdoor-show-2026', 'vsa', FALSE, FALSE, FALSE),
+(10, '2026-02-07 00:00:00', 'Team River Runner - Kayaking Workshop', 'Montrose VA', 'Montrose VA - Pool', 'team-river-runner-kayaking-workshop-feb-07', 'vsa', FALSE, FALSE, FALSE),
+(11, '2026-03-07 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-mar-07', 'vsa', FALSE, FALSE, FALSE),
+(12, '2026-03-11 00:00:00', 'DCSO Game Dinner', 'Poughkeepsie', NULL, 'dcso-game-dinner-mar-11', 'vsa', FALSE, FALSE, FALSE),
+(13, '2026-03-14 00:00:00', 'Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-14', 'vsa', FALSE, FALSE, FALSE),
+(14, '2026-03-21 00:00:00', 'NRA CCW Course', 'Veterans Sportsmens Association', NULL, 'nra-ccw-course-mar-21', 'vsa', FALSE, FALSE, FALSE),
+(15, '2026-03-21 00:00:00', 'New York State Pistol Permit Safety Course', 'Veterans Sportsmens Association', NULL, 'nys-pistol-permit-safety-course-mar-21', 'vsa', FALSE, FALSE, FALSE),
+(16, '2026-04-04 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-04', 'vsa', FALSE, FALSE, FALSE),
+(17, '2026-04-18 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-18', 'vsa', FALSE, FALSE, FALSE),
+(18, '2026-04-25 00:00:00', '51st Wappingers Creek Water Derby', 'Pleasant Valley', NULL, '51st-wappingers-creek-water-derby', 'vsa', FALSE, FALSE, FALSE),
+(19, '2026-05-30 00:00:00', 'Introduction to Precision Rifle Shooting', 'Tommy Gun Warehouse', NULL, 'introduction-precision-rifle-shooting-may-30', 'vsa', FALSE, FALSE, FALSE),
+(20, '2026-05-30 00:00:00', 'NRA Basic Rifle Course', 'Greeley', NULL, 'nra-basic-rifle-course-may-30', 'vsa', FALSE, FALSE, FALSE),
+-- Organizational meetings (event_type = 'org')
+(21, '2026-03-08 00:00:00', 'First Quarterly Meeting', 'PA', NULL, 'org-2026-03-08-pa', 'org', FALSE, FALSE, FALSE),
+(22, '2026-04-19 00:00:00', 'Second Quarter Board and General Member Meeting', 'NY', NULL, 'org-2026-04-19-ny', 'org', FALSE, FALSE, FALSE),
+(23, '2026-05-03 00:00:00', 'Second Quarter Board and General Member Meeting', 'PA', NULL, 'org-2026-05-03-pa', 'org', FALSE, FALSE, FALSE),
+(24, '2026-07-12 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'NY', NULL, 'org-2026-07-12-ny', 'org', FALSE, FALSE, FALSE),
+(25, '2026-08-09 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'PA', NULL, 'org-2026-08-09-pa', 'org', FALSE, FALSE, FALSE),
+(26, '2026-12-12 00:00:00', 'Veterans Sportsmens Association Fourth Quarter Meeting', 'NY & PA', NULL, 'org-2026-12-12-ny-pa', 'org', FALSE, FALSE, FALSE);
 
 -- Reset auto increment for events table (optional)
--- ALTER TABLE events AUTO_INCREMENT = 21;
+-- ALTER TABLE events AUTO_INCREMENT = 27;
 
 -- Insert Event Details (one row per event; event_id 1-20 matches events.id)
 INSERT INTO event_details (event_id, slug, subtitle, details) VALUES
@@ -362,18 +386,47 @@ INSERT INTO news (id, title, description, published_date) VALUES
 -- Reset auto increment for news table (optional - only needed if inserting with specific IDs)
 -- ALTER TABLE news AUTO_INCREMENT = 7;
 
--- Insert Gallery Images
-INSERT INTO gallery_images (id, url, alt_text, caption, display_order) VALUES
-(1, 'https://static.wixstatic.com/media/30c799_6c5b7f47d057455497bc4936c6462790~mv2.jpg', 'VSA Event', NULL, 1),
-(2, 'https://static.wixstatic.com/media/99ec98fdb81945c29c25a3ad6c5606b1.jpg', 'VSA Activity', NULL, 2),
-(3, 'https://static.wixstatic.com/media/30c799_56468b7c375d4956ac7b3039bbaf4789~mv2.jpg', 'VSA Program', NULL, 3),
-(4, 'https://static.wixstatic.com/media/30c799_e52caab3522f42b2b32b55b48215eeb7~mv2.jpg', 'VSA Event', NULL, 4),
-(5, 'https://static.wixstatic.com/media/30c799_958dd0efbd1c4f26bba179a9dd2d1261~mv2.jpg', 'VSA Activity', NULL, 5),
-(6, 'https://static.wixstatic.com/media/30c799_10bf358ef0a74b6ab84752c574bcacfe~mv2.jpg', 'VSA Program', NULL, 6);
+-- Insert Gallery Images (event_id NULL = no event assigned)
+INSERT INTO gallery_images (id, url, alt_text, caption, display_order, event_id) VALUES
+(1, 'https://static.wixstatic.com/media/30c799_6c5b7f47d057455497bc4936c6462790~mv2.jpg', 'VSA Event', NULL, 1, NULL),
+(2, 'https://static.wixstatic.com/media/99ec98fdb81945c29c25a3ad6c5606b1.jpg', 'VSA Activity', NULL, 2, NULL),
+(3, 'https://static.wixstatic.com/media/30c799_56468b7c375d4956ac7b3039bbaf4789~mv2.jpg', 'VSA Program', NULL, 3, NULL),
+(4, 'https://static.wixstatic.com/media/30c799_e52caab3522f42b2b32b55b48215eeb7~mv2.jpg', 'VSA Event', NULL, 4, NULL),
+(5, 'https://static.wixstatic.com/media/30c799_958dd0efbd1c4f26bba179a9dd2d1261~mv2.jpg', 'VSA Activity', NULL, 5, NULL),
+(6, 'https://static.wixstatic.com/media/30c799_10bf358ef0a74b6ab84752c574bcacfe~mv2.jpg', 'VSA Program', NULL, 6, NULL);
 
 -- Reset sequence for gallery_images table
 -- Reset auto increment for gallery_images table (optional - only needed if inserting with specific IDs)
 -- ALTER TABLE gallery_images AUTO_INCREMENT = 7;
+
+-- ============================================
+-- MIGRATION: Add 'org' to events.event_type and insert org meetings (if not already present)
+-- ALTER TABLE events MODIFY COLUMN event_type ENUM('vsa', 'shredvets', 'org') NOT NULL DEFAULT 'vsa';
+-- INSERT INTO events (date, title, location, address, slug, event_type, canceled, date_changed, location_changed) VALUES
+-- ('2026-03-08 00:00:00', 'First Quarterly Meeting', 'PA', NULL, 'org-2026-03-08-pa', 'org', FALSE, FALSE, FALSE),
+-- ('2026-04-19 00:00:00', 'Second Quarter Board and General Member Meeting', 'NY', NULL, 'org-2026-04-19-ny', 'org', FALSE, FALSE, FALSE),
+-- ('2026-05-03 00:00:00', 'Second Quarter Board and General Member Meeting', 'PA', NULL, 'org-2026-05-03-pa', 'org', FALSE, FALSE, FALSE),
+-- ('2026-07-12 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'NY', NULL, 'org-2026-07-12-ny', 'org', FALSE, FALSE, FALSE),
+-- ('2026-08-09 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'PA', NULL, 'org-2026-08-09-pa', 'org', FALSE, FALSE, FALSE),
+-- ('2026-12-12 00:00:00', 'Veterans Sportsmens Association Fourth Quarter Meeting', 'NY & PA', NULL, 'org-2026-12-12-ny-pa', 'org', FALSE, FALSE, FALSE);
+
+-- MIGRATION: Add event_id to gallery_images (run if table already exists without event_id)
+-- ============================================
+-- ALTER TABLE gallery_images ADD COLUMN event_id INT NULL;
+-- ALTER TABLE gallery_images ADD CONSTRAINT fk_gallery_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL;
+-- CREATE INDEX idx_gallery_event_id ON gallery_images(event_id);
+
+-- MIGRATION: Add password_reset_tokens table (run if table does not exist)
+-- CREATE TABLE IF NOT EXISTS password_reset_tokens (
+--     id INT AUTO_INCREMENT PRIMARY KEY,
+--     user_id INT NOT NULL,
+--     token VARCHAR(255) UNIQUE NOT NULL,
+--     expires_at TIMESTAMP NOT NULL,
+--     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+--     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+-- );
+-- CREATE INDEX idx_password_reset_token ON password_reset_tokens(token);
+-- CREATE INDEX idx_password_reset_expires ON password_reset_tokens(expires_at);
 
 -- ============================================
 -- NOTES

@@ -1,8 +1,12 @@
 export { default as Home } from "./Home";
 export { default as ShredVets } from "./ShredVets";
 export { default as EventDetail } from "./EventDetail";
+export { default as PastEvents } from "./PastEvents";
 export { default as Admin } from "./Admin";
 export { default as Login } from "./Login";
 export { default as Register } from "./Register";
 export { default as Profile } from "./Profile";
 export { default as VerifyEmail } from "./VerifyEmail";
+export { default as ForgotPassword } from "./ForgotPassword";
+export { default as ResetPassword } from "./ResetPassword";
+export { default as Meetings } from "./Meetings";

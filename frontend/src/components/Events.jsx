@@ -2,8 +2,9 @@ import { useState, useEffect, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { fetchEvents, fetchMyRegistrations } from "../api";
 import { useAuth } from "../contexts/AuthContext";
+import { formatEventDateDisplay } from "../utils/date";
 
-function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming Events" }) {
+function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming Events", pastEventsLink, pastEventsLabel }) {
   const { token } = useAuth();
   const [events, setEvents] = useState([]);
   const [myRegistrations, setMyRegistrations] = useState([]);
@@ -71,7 +72,7 @@ function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming E
             const content = (
               <>
                 <div className="event-date">
-                  {date}
+                  {formatEventDateDisplay(date)}
                   {dateChanged && <span className="event-status-badge event-status-changed">Date Changed</span>}
                 </div>
                 <div className="event-title">
@@ -97,6 +98,13 @@ function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming E
             );
           })}
         </div>
+        {pastEventsLink && (
+          <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
+            <Link to={pastEventsLink} className="cta-button" style={{ background: "var(--dark-gray)" }}>
+              {pastEventsLabel ?? "View past events"}
+            </Link>
+          </p>
+        )}
       </div>
     </section>
   );

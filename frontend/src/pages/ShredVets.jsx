@@ -28,7 +28,12 @@ function ShredVets() {
         </section>
 
         {/* Events - from API */}
-        <Events eventType="shredvets" sectionTitle="Upcoming ShredVets Events" />
+        <Events
+          eventType="shredvets"
+          sectionTitle="Upcoming ShredVets Events"
+          pastEventsLink="/shredvets-past-events"
+          pastEventsLabel="View past ShredVets events"
+        />
 
         {/* Season highlight - card style */}
         <section style={{ background: "var(--light-gray)" }}>

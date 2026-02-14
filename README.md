@@ -19,7 +19,7 @@ npm install
 npm run dev
 ```
 
-Then open http://localhost:5173 (or the URL Vite prints).
+Then open http://localhost:2222 (or the URL Vite prints).
 
 ### Build for production
 
@@ -85,7 +85,7 @@ npm start
 npm run dev
 ```
 
-The API will run on `http://localhost:3001` by default.
+The API will run on `http://localhost:3333` by default.
 
 ### Default Admin Account
 
@@ -101,5 +101,5 @@ See `backend/README.md` for full API documentation.
 ## Frontend-Backend Connection
 
 1. Copy `frontend/.env.example` to `frontend/.env`
-2. Set `VITE_API_URL=http://localhost:3001/api` (or your backend URL)
+2. Set `VITE_API_URL=http://localhost:3333/api` (or your backend URL)
 3. The frontend will automatically connect to the backend API

@@ -24,7 +24,7 @@ transporter.verify((error, success) => {
 });
 
 export const sendVerificationEmail = async (email, name, verificationToken) => {
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:2222";
   const verificationLink = `${frontendUrl}/verify-email?token=${verificationToken}`;
 
   const mailOptions = {
@@ -228,6 +228,79 @@ export const sendEmailChangeVerificationEmail = async (email, name, verification
   } catch (error) {
     console.error("Error sending email change verification email:", error);
     throw new Error("Failed to send verification email");
+  }
+};
+
+export const sendPasswordResetEmail = async (email, name, resetToken) => {
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const resetLink = `${frontendUrl}/reset-password?token=${encodeURIComponent(resetToken)}`;
+
+  const mailOptions = {
+    from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    to: email,
+    subject: "Reset Your VSA Password",
+    html: `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #003366; color: white; padding: 20px; text-align: center; }
+            .content { padding: 20px; background: #f9f9f9; }
+            .button { display: inline-block; padding: 12px 24px; background: #cc0000; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+            .footer { text-align: center; padding: 20px; font-size: 12px; color: #666; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header"><h1>Veterans Sportsmens Association</h1></div>
+            <div class="content">
+              <h2>Reset Your Password</h2>
+              <p>Hello ${name},</p>
+              <p>We received a request to reset the password for your VSA account. Click the button below to choose a new password:</p>
+              <p style="text-align: center;">
+                <a href="${resetLink}" class="button">Reset Password</a>
+              </p>
+              <p>Or copy and paste this link into your browser:</p>
+              <p style="word-break: break-all; color: #0066cc;">${resetLink}</p>
+              <p>This link will expire in 1 hour.</p>
+              <p>If you did not request a password reset, you can safely ignore this email.</p>
+            </div>
+            <div class="footer">
+              <p>Veterans Sportsmens Association</p>
+              <p>Veterans Serving Veterans</p>
+            </div>
+          </div>
+        </body>
+      </html>
+    `,
+    text: `
+Reset Your VSA Password
+
+Hello ${name},
+
+We received a request to reset the password for your VSA account. Visit this link to choose a new password:
+
+${resetLink}
+
+This link will expire in 1 hour.
+
+If you did not request a password reset, you can safely ignore this email.
+
+Veterans Sportsmens Association
+Veterans Serving Veterans
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Password reset email sent:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Error sending password reset email:", error);
+    throw new Error("Failed to send password reset email");
   }
 };
 

@@ -1,5 +1,6 @@
 import pool from "../config/database.js";
 import { sendRegistrationConfirmationEmail } from "../services/emailService.js";
+import { normalizePhoneToDigits } from "../utils/phone.js";
 
 /** Create a new event registration (public; if authenticated, links to user for "My RSVPs"). */
 export const createRegistration = async (req, res) => {
@@ -62,10 +63,11 @@ export const createRegistration = async (req, res) => {
       }
     }
 
+    const phoneDigits = normalizePhoneToDigits(phone);
     await connection.execute(
       `INSERT INTO event_registrations (event_id, user_id, name, email, phone, message)
        VALUES (?, ?, ?, ?, ?, ?)`,
-      [eventId, userId, name, trimmedEmail, phone?.trim() || null, message?.trim() || null]
+      [eventId, userId, name, trimmedEmail, phoneDigits, message?.trim() || null]
     );
     connection.release();
 

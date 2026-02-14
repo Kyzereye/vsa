@@ -5,6 +5,7 @@ export { default as Programs } from "./Programs";
 export { default as Events } from "./Events";
 export { default as News } from "./News";
 export { default as Gallery } from "./Gallery";
+export { default as AdminGallery } from "./AdminGallery";
 export { default as Contact } from "./Contact";
 export { default as Footer } from "./Footer";
 export { default as RegistrationDialog } from "./RegistrationDialog";

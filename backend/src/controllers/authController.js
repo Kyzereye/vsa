@@ -1,11 +1,18 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import pool from "../config/database.js";
-import { sendVerificationEmail } from "../services/emailService.js";
+import { sendVerificationEmail, sendPasswordResetEmail } from "../services/emailService.js";
 import {
   generateVerificationToken,
   storeVerificationToken,
 } from "../models/emailVerificationModel.js";
+import {
+  generateResetToken,
+  storeResetToken,
+  verifyResetToken,
+  deleteResetToken,
+} from "../models/passwordResetModel.js";
+import { normalizePhoneToDigits } from "../utils/phone.js";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key-change-in-production";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
@@ -42,11 +49,12 @@ export const register = async (req, res) => {
     // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create user
+    // Create user (phone stored as 10 digits only)
+    const phoneDigits = normalizePhoneToDigits(phone);
     const [result] = await connection.execute(
       `INSERT INTO users (name, email, phone, password_hash, role, status, join_date, email_opt_in, email_verified) 
        VALUES (?, ?, ?, ?, 'member', 'active', CURDATE(), 0, 0)`,
-      [name.trim(), email.trim(), phone?.trim() || null, hashedPassword]
+      [name.trim(), email.trim(), phoneDigits, hashedPassword]
     );
 
     // Generate verification token
@@ -161,5 +169,75 @@ export const login = async (req, res) => {
     if (connection) connection.release();
     console.error("Login error:", error);
     res.status(500).json({ message: "Error logging in" });
+  }
+};
+
+export const requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email || !email.trim()) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const connection = await pool.getConnection();
+    const [users] = await connection.execute(
+      "SELECT id, name, email FROM users WHERE email = ? AND status = 'active'",
+      [email.trim()]
+    );
+    connection.release();
+
+    // Always return success to avoid leaking whether the email exists
+    if (users.length === 0) {
+      return res.json({
+        message: "If an account exists with that email, you will receive a password reset link shortly.",
+      });
+    }
+
+    const user = users[0];
+    const token = generateResetToken();
+    await storeResetToken(user.id, token);
+
+    sendPasswordResetEmail(user.email, user.name, token).catch((err) => {
+      console.error("Failed to send password reset email:", err);
+    });
+
+    res.json({
+      message: "If an account exists with that email, you will receive a password reset link shortly.",
+    });
+  } catch (error) {
+    console.error("Request password reset error:", error);
+    res.status(500).json({ message: "Error processing request" });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !token.trim()) {
+      return res.status(400).json({ message: "Reset token is required" });
+    }
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const userId = await verifyResetToken(token.trim());
+    if (!userId) {
+      return res.status(400).json({ message: "Invalid or expired reset link. Please request a new one." });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const connection = await pool.getConnection();
+    await connection.execute("UPDATE users SET password_hash = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?", [
+      hashedPassword,
+      userId,
+    ]);
+    connection.release();
+
+    await deleteResetToken(token.trim());
+
+    res.json({ message: "Password has been reset successfully. You can now log in with your new password." });
+  } catch (error) {
+    console.error("Reset password error:", error);
+    res.status(500).json({ message: "Error resetting password" });
   }
 };

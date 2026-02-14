@@ -1,4 +1,5 @@
 import pool from "../config/database.js";
+import { normalizePhoneToDigits } from "../utils/phone.js";
 import bcrypt from "bcryptjs";
 import { sendEmailChangeVerificationEmail } from "../services/emailService.js";
 import {
@@ -127,7 +128,7 @@ export const updateUser = async (req, res) => {
     }
     if (phone !== undefined) {
       updates.push("phone = ?");
-      values.push(phone?.trim() || null);
+      values.push(normalizePhoneToDigits(phone));
     }
     if (emailOptIn !== undefined) {
       updates.push("email_opt_in = ?");

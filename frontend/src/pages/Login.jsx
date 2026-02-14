@@ -103,6 +103,12 @@ function Login() {
                   </div>
                 </div>
 
+                <p style={{ textAlign: "right", marginTop: "0.5rem" }}>
+                  <Link to="/forgot-password" style={{ color: "var(--primary-red)", fontSize: "0.95rem" }}>
+                    Forgot password?
+                  </Link>
+                </p>
+
                 <button
                   type="submit"
                   className="cta-button"

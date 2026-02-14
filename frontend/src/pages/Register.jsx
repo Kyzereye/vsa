@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import { useAuth } from "../contexts/AuthContext";
+import { formatPhoneDisplay } from "../utils/phone";
 
 function Register() {
   const [formData, setFormData] = useState({
@@ -30,13 +31,14 @@ function Register() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    // Clear error when user starts typing
+    if (name === "phone") {
+      const digits = String(value).replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: digits }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
     if (errors[name]) {
-      setErrors((prev) => ({
-        ...prev,
-        [name]: "",
-      }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
@@ -83,7 +85,7 @@ function Register() {
     setLoading(true);
 
     try {
-      const result = await register(formData.name.trim(), formData.email.trim(), formData.phone?.trim() || "", formData.password);
+      const result = await register(formData.name.trim(), formData.email.trim(), formData.phone || "", formData.password);
       
       // Show verification dialog
       if (result && result.requiresVerification) {
@@ -162,7 +164,7 @@ function Register() {
                     id="phone"
                     name="phone"
                     type="tel"
-                    value={formData.phone}
+                    value={formData.phone.length === 10 ? formatPhoneDisplay(formData.phone) : formData.phone}
                     onChange={handleChange}
                     className="auth-input"
                     placeholder="(555) 555-5555"

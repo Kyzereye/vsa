@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate, Link } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3333/api";
 
 function VerifyEmail() {
   const [searchParams] = useSearchParams();

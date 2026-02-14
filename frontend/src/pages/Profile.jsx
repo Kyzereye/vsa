@@ -5,8 +5,9 @@ import Footer from "../components/Footer";
 import { ExpansionPanel } from "../components";
 import { useAuth } from "../contexts/AuthContext";
 import { fetchMyRegistrations, deleteRegistration } from "../api";
+import { formatPhoneDisplay } from "../utils/phone";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3001/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3333/api";
 
 function Profile() {
   const { user, token, logout, refreshUser, loading: authLoading } = useAuth();
@@ -67,6 +68,13 @@ function Profile() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
+    if (name === "phone") {
+      const digits = String(value).replace(/\D/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, phone: digits }));
+      setError("");
+      setSuccess("");
+      return;
+    }
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -453,7 +461,7 @@ function Profile() {
                       id="phone"
                       name="phone"
                       type="tel"
-                      value={formData.phone}
+                      value={formData.phone.length === 10 ? formatPhoneDisplay(formData.phone) : formData.phone}
                       onChange={handleChange}
                       className="auth-input"
                       placeholder="(555) 555-5555"

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { createRegistration } from "../api";
 import { useAuth } from "../contexts/AuthContext";
+import { formatPhoneDisplay } from "../utils/phone";
 
 /**
  * Reusable registration dialog for ShredVets and VSA events.
@@ -149,7 +150,7 @@ function RegistrationDialog({ open, onClose, event }) {
                 id="reg-phone"
                 name="phone"
                 type="tel"
-                value={formData.phone}
+                value={formData.phone.length === 10 ? formatPhoneDisplay(formData.phone) : formData.phone}
                 onChange={handleChange}
                 placeholder="(555) 555-5555"
               />

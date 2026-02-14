@@ -35,7 +35,7 @@ function Home() {
         <Hero />
         <About />
         <Programs />
-        <Events />
+        <Events pastEventsLink="/past-events" pastEventsLabel="View past VSA events" />
         <News />
         <Gallery />
         <Contact />

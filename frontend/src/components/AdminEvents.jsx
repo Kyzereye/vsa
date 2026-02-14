@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { formatEventDateDisplay } from "../utils/date";
 
 function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
   const [editingId, setEditingId] = useState(null);
@@ -13,15 +14,12 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
     canceled: false,
     dateChanged: false,
     locationChanged: false,
-    originalDate: "",
-    originalLocation: "",
-    originalAddress: "",
   });
 
   const handleEdit = (event) => {
     setEditingId(event.id);
     setFormData({
-      date: event.date,
+      date: event.date ? String(event.date).slice(0, 10) : "",
       title: event.title,
       location: event.location,
       address: event.address || "",
@@ -30,9 +28,6 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       canceled: event.canceled || false,
       dateChanged: event.dateChanged || false,
       locationChanged: event.locationChanged || false,
-      originalDate: event.originalDate || event.date,
-      originalLocation: event.originalLocation || event.location,
-      originalAddress: event.originalAddress || event.address || "",
     });
     setShowAddForm(false);
   };
@@ -50,9 +45,6 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       canceled: false,
       dateChanged: false,
       locationChanged: false,
-      originalDate: "",
-      originalLocation: "",
-      originalAddress: "",
     });
   };
 
@@ -69,42 +61,26 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       canceled: false,
       dateChanged: false,
       locationChanged: false,
-      originalDate: "",
-      originalLocation: "",
-      originalAddress: "",
     });
   };
 
   const handleSave = () => {
-    let eventData;
-    
     if (editingId) {
-      // Editing existing event - check for changes
       const originalEvent = events.find((e) => e.id === editingId);
-      const originalDate = formData.originalDate || originalEvent?.date || formData.date;
-      const originalLocation = formData.originalLocation || originalEvent?.location || formData.location;
-      const originalAddress = formData.originalAddress ?? originalEvent?.address ?? formData.address;
-      
-      eventData = {
+      const origDate = originalEvent?.date ? String(originalEvent.date).slice(0, 10) : "";
+      onUpdate(editingId, {
         ...formData,
-        originalDate,
-        originalLocation,
-        originalAddress,
-        dateChanged: formData.date !== originalDate,
-        locationChanged: (formData.location !== originalLocation) || (formData.address !== originalAddress),
-      };
-      onUpdate(editingId, eventData);
+        dateChanged: formData.date !== origDate,
+        locationChanged:
+          formData.location !== (originalEvent?.location ?? "") ||
+          (formData.address ?? "") !== (originalEvent?.address ?? ""),
+      });
     } else {
-      // Adding new event - no changes yet
-      eventData = {
+      onAdd({
         ...formData,
-        originalDate: formData.date,
-        originalLocation: formData.location,
-        originalAddress: formData.address || null,
         dateChanged: false,
         locationChanged: false,
-      };
-      onAdd(eventData);
+      });
     }
     handleCancel();
   };
@@ -137,12 +113,12 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
             <div>
               <label>Date *</label>
               <input
-                type="text"
+                type="date"
                 name="date"
                 value={formData.date}
                 onChange={handleChange}
                 className="admin-input"
-                placeholder="Sat, Jan 31"
+                required
               />
             </div>
             <div>
@@ -272,39 +248,15 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                       )}
                     </td>
                     <td>
-                      <div>
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="canceled"
-                            checked={formData.canceled}
-                            onChange={handleChange}
-                          />
-                          Canceled
-                        </label>
-                      </div>
-                      <div>
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="dateChanged"
-                            checked={formData.dateChanged}
-                            onChange={handleChange}
-                          />
-                          Date Changed
-                        </label>
-                      </div>
-                      <div>
-                        <label>
-                          <input
-                            type="checkbox"
-                            name="locationChanged"
-                            checked={formData.locationChanged}
-                            onChange={handleChange}
-                          />
-                          Location Changed
-                        </label>
-                      </div>
+                      <label>
+                        <input
+                          type="checkbox"
+                          name="canceled"
+                          checked={formData.canceled}
+                          onChange={handleChange}
+                        />
+                        Canceled
+                      </label>
                     </td>
                     <td>
                       <div className="admin-actions">
@@ -328,7 +280,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                 ) : (
                   <>
                     <td>
-                      {event.date}
+                      {formatEventDateDisplay(event.date)}
                       {event.dateChanged && (
                         <div className="admin-alert admin-alert-changed">Date Changed</div>
                       )}

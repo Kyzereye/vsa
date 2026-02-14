@@ -5,6 +5,7 @@ import Footer from "../components/Footer";
 import RegistrationDialog from "../components/RegistrationDialog";
 import { fetchEventBySlug, fetchEventById, fetchMyRegistrations } from "../api";
 import { useAuth } from "../contexts/AuthContext";
+import { formatEventDateDisplay } from "../utils/date";
 
 function EventDetail() {
   const { token } = useAuth();
@@ -79,7 +80,7 @@ function EventDetail() {
             <h1>{title}</h1>
             {subtitle && <p>{subtitle}</p>}
             <p style={{ opacity: 0.95, fontSize: "1.1rem" }}>
-              {date} · {location}
+              {formatEventDateDisplay(date)} · {location}
               {address && <> · {address}</>}
             </p>
             {(event.canceled || event.dateChanged || event.locationChanged) && (

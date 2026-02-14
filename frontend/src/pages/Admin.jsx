@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { formatPhoneDisplay } from "../utils/phone";
+import { formatDateDDMMMYYYY } from "../utils/date";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import AdminEvents from "../components/AdminEvents";
 import AdminPrograms from "../components/AdminPrograms";
 import AdminNews from "../components/AdminNews";
 import AdminRegistrations from "../components/AdminRegistrations";
+import AdminGallery from "../components/AdminGallery";
 import { useAuth } from "../contexts/AuthContext";
 import {
   fetchUsers,
@@ -12,6 +15,9 @@ import {
   fetchPrograms,
   fetchNews,
   fetchRegistrations,
+  fetchGallery,
+  uploadGalleryImage,
+  deleteGalleryImage,
   updateUser,
   deleteUser,
   createEvent,
@@ -33,6 +39,7 @@ function Admin() {
   const [programs, setPrograms] = useState([]);
   const [news, setNews] = useState([]);
   const [registrations, setRegistrations] = useState([]);
+  const [gallery, setGallery] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
@@ -121,9 +128,6 @@ function Admin() {
         canceled: data.canceled,
         dateChanged: data.dateChanged,
         locationChanged: data.locationChanged,
-        originalDate: data.originalDate,
-        originalLocation: data.originalLocation,
-        originalAddress: data.originalAddress ?? null,
       };
       const res = await updateEvent(id, payload, token);
       setEvents(events.map((event) => (event.id === id ? { ...event, ...res.event } : event)));
@@ -145,9 +149,6 @@ function Admin() {
         canceled: data.canceled,
         dateChanged: data.dateChanged,
         locationChanged: data.locationChanged,
-        originalDate: data.originalDate,
-        originalLocation: data.originalLocation,
-        originalAddress: data.originalAddress ?? null,
       };
       const res = await createEvent(payload, token);
       const newEvent = { ...res.event, status: res.event.eventType || "vsa" };
@@ -288,6 +289,13 @@ function Admin() {
               >
                 Registered
               </button>
+              <button
+                type="button"
+                className={`admin-tab ${activeTab === "gallery" ? "active" : ""}`}
+                onClick={() => setActiveTab("gallery")}
+              >
+                Gallery
+              </button>
             </div>
 
             {activeTab === "users" && (
@@ -384,14 +392,14 @@ function Admin() {
                         <>
                           <td>{user.name}</td>
                           <td>{user.email}</td>
-                          <td>{user.phone}</td>
+                          <td>{formatPhoneDisplay(user.phone)}</td>
                           <td>
                             <span className={`admin-badge admin-badge-${user.role}`}>{user.role}</span>
                           </td>
                           <td>
                             <span className={`admin-badge admin-badge-${user.status}`}>{user.status}</span>
                           </td>
-                          <td>{user.joinDate}</td>
+                          <td>{formatDateDDMMMYYYY(user.joinDate)}</td>
                           <td>
                             <div className="admin-actions">
                               <button
@@ -454,6 +462,29 @@ function Admin() {
                   Who signed up for which event. Name and contact info from the registration form.
                 </p>
                 <AdminRegistrations registrations={registrations} events={events} />
+              </>
+            )}
+
+            {activeTab === "gallery" && (
+              <>
+                <h2 className="section-title">Photo Gallery</h2>
+                <p style={{ color: "var(--text-gray)", marginBottom: "1rem" }}>
+                  Add images to the gallery. Images are stored in <code>uploads/gallery</code>. You can assign an event to each image.
+                </p>
+                <AdminGallery
+                  gallery={gallery}
+                  events={events}
+                  onUpload={async (formData) => {
+                    if (!token) return;
+                    const { image } = await uploadGalleryImage(formData, token);
+                    setGallery((prev) => [...prev, image]);
+                  }}
+                  onDelete={async (id) => {
+                    if (!token) return;
+                    await deleteGalleryImage(id, token);
+                    setGallery((prev) => prev.filter((img) => img.id !== id));
+                  }}
+                />
               </>
             )}
             </>
