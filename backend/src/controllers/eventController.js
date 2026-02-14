@@ -19,6 +19,18 @@ function parseEventDate(dateStr) {
   return new Date(2000, month, dayNum);
 }
 
+/** Create a URL-safe slug from a string; append suffix to ensure uniqueness. */
+function slugify(text, suffix) {
+  const base = String(text || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+  return base ? `${base}-${suffix}` : String(suffix);
+}
+
 /** Format row.date (Date or string) to ISO date string YYYY-MM-DD for API/frontend. */
 function formatDateValue(val) {
   if (!val) return null;
@@ -162,7 +174,8 @@ export const createEvent = async (req, res) => {
       return res.status(400).json({ message: "Date, title, and location are required" });
     }
 
-    const event_type = eventType === "shredvets" ? "shredvets" : "vsa";
+    const allowed = ["vsa", "shredvets", "org"];
+    const event_type = allowed.includes(eventType) ? eventType : "vsa";
     const dateVal = String(date).trim().match(/^\d{4}-\d{2}-\d{2}/) ? `${date.replace(/T.*$/, "")} 00:00:00` : date;
 
     connection = await pool.getConnection();
@@ -174,7 +187,7 @@ export const createEvent = async (req, res) => {
         title,
         location,
         address || null,
-        slug || null,
+        slug && String(slug).trim() ? String(slug).trim() : null,
         event_type,
         canceled ? 1 : 0,
         dateChanged ? 1 : 0,
@@ -182,6 +195,10 @@ export const createEvent = async (req, res) => {
       ]
     );
     const insertId = result.insertId;
+    const finalSlug = slug && String(slug).trim() ? String(slug).trim() : slugify(title, insertId);
+    if (!slug || !String(slug).trim()) {
+      await connection.execute("UPDATE events SET slug = ? WHERE id = ?", [finalSlug, insertId]);
+    }
     const [rows] = await connection.execute(
       "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed FROM events WHERE id = ?",
       [insertId]
@@ -233,8 +250,9 @@ export const updateEvent = async (req, res) => {
       values.push(slug || null);
     }
     if (eventType !== undefined) {
+      const allowed = ["vsa", "shredvets", "org"];
       updates.push("event_type = ?");
-      values.push(eventType === "shredvets" ? "shredvets" : "vsa");
+      values.push(allowed.includes(eventType) ? eventType : "vsa");
     }
     if (canceled !== undefined) {
       updates.push("canceled = ?");

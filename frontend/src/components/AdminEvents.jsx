@@ -10,7 +10,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
     location: "",
     address: "",
     slug: "",
-    status: "active",
+    eventType: "vsa",
     canceled: false,
     dateChanged: false,
     locationChanged: false,
@@ -24,7 +24,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       location: event.location,
       address: event.address || "",
       slug: event.slug || "",
-      status: event.status || "active",
+      eventType: event.eventType || event.status || "vsa",
       canceled: event.canceled || false,
       dateChanged: event.dateChanged || false,
       locationChanged: event.locationChanged || false,
@@ -41,7 +41,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       location: "",
       address: "",
       slug: "",
-      status: "active",
+      eventType: "vsa",
       canceled: false,
       dateChanged: false,
       locationChanged: false,
@@ -57,7 +57,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       location: "",
       address: "",
       slug: "",
-      status: "active",
+      eventType: "vsa",
       canceled: false,
       dateChanged: false,
       locationChanged: false,
@@ -155,15 +155,17 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
               />
             </div>
             <div>
-              <label>Slug (optional)</label>
-              <input
-                type="text"
-                name="slug"
-                value={formData.slug}
+              <label>Event type *</label>
+              <select
+                name="eventType"
+                value={formData.eventType}
                 onChange={handleChange}
                 className="admin-input"
-                placeholder="event-slug"
-              />
+              >
+                <option value="vsa">VSA only (home page)</option>
+                <option value="shredvets">ShredVets</option>
+                <option value="org">Organizational meeting</option>
+              </select>
             </div>
             <div>
               <label>
@@ -195,6 +197,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
               <th>Date</th>
               <th>Title</th>
               <th>Location</th>
+              <th>Type</th>
               <th>Status</th>
               <th>Actions</th>
             </tr>
@@ -248,6 +251,19 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                       )}
                     </td>
                     <td>
+                      <select
+                        name="eventType"
+                        value={formData.eventType}
+                        onChange={handleChange}
+                        className="admin-input"
+                        style={{ minWidth: "8rem" }}
+                      >
+                        <option value="vsa">VSA only</option>
+                        <option value="shredvets">ShredVets</option>
+                        <option value="org">Org meeting</option>
+                      </select>
+                    </td>
+                    <td>
                       <label>
                         <input
                           type="checkbox"
@@ -292,6 +308,9 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                       {event.locationChanged && (
                         <div className="admin-alert admin-alert-changed">Location Changed</div>
                       )}
+                    </td>
+                    <td>
+                      {({ vsa: "VSA only", shredvets: "ShredVets", org: "Org meeting" }[event.eventType || event.status] || "VSA only")}
                     </td>
                     <td>
                       {event.canceled && (

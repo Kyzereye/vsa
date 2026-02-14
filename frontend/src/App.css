@@ -5,12 +5,12 @@
   position: sticky;
   top: 0;
   z-index: 1000;
-  padding: 0.4rem 0;
+  padding: 0.6rem 0;
 }
 
 .nav-container {
   width: 100%;
-  padding: 0 1rem; 
+  padding: 0 1.5rem; 
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -18,7 +18,7 @@
 }
 
 .nav-logo {
-  font-size: 1rem;
+  font-size: 1.25rem;
   font-weight: bold;
   color: var(--primary-red);
   text-decoration: none;
@@ -33,15 +33,15 @@
 .nav-menu-toggle {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.3rem;
   background: none;
   border: none;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
   color: var(--dark-gray);
-  padding: 0.25rem 0.4rem;
-  border-radius: 4px;
+  padding: 0.375rem 0.6rem;
+  border-radius: 5px;
   font-family: inherit;
 }
 
@@ -51,7 +51,7 @@
 }
 
 .nav-menu-icon {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   line-height: 1;
 }
 
@@ -62,15 +62,15 @@
 .nav-dropdown-trigger {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.3rem;
   background: none;
   border: none;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 500;
   cursor: pointer;
   color: var(--dark-gray);
-  padding: 0.25rem 0.4rem;
-  border-radius: 4px;
+  padding: 0.375rem 0.6rem;
+  border-radius: 5px;
   font-family: inherit;
 }
 
@@ -111,7 +111,7 @@
 .nav-dropdown-item {
   display: block;
   width: 100%;
-  padding: 0.25rem 0.5rem;
+  padding: 0.4rem 0.75rem;
   color: var(--dark-gray);
   font-weight: 500;
   text-decoration: none;
@@ -119,7 +119,7 @@
   background: none;
   border: none;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   cursor: pointer;
 }
 
@@ -139,7 +139,7 @@
   left: 0;
   right: 0;
   background: var(--white);
-  padding: 0.4rem 0.75rem;
+  padding: 0.6rem 1rem;
   box-shadow: var(--shadow-lg);
   z-index: 99;
 }
@@ -155,12 +155,13 @@
   list-style: none;
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 2rem;
+  gap: 0.5rem 1.25rem;
 }
 
 .nav-menu-links a {
   color: var(--dark-gray);
   font-weight: 500;
+  font-size: 0.9375rem;
   text-decoration: none;
 }
 
@@ -172,13 +173,13 @@
 .hero {
   background: linear-gradient(135deg, var(--primary-blue) 0%, var(--dark-gray) 100%);
   color: var(--white);
-  padding: 1.5rem 0.75rem;
+  padding: 2.25rem 1rem;
   text-align: center;
 }
 
 /* Reduced padding for auth pages (Login, Register, Profile) */
 .hero-auth {
-  padding: 1rem 0.75rem;
+  padding: 1.5rem 1rem;
 }
 
 .hero-content {
@@ -187,14 +188,14 @@
 }
 
 .hero h1 {
-  font-size: 1.25rem;
-  margin-bottom: 0.4rem;
+  font-size: 1.875rem;
+  margin-bottom: 0.6rem;
   font-weight: 700;
 }
 
 .hero p {
-  font-size: 0.8125rem;
-  margin-bottom: 0.6rem;
+  font-size: 1rem;
+  margin-bottom: 0.9rem;
   opacity: 0.9;
 }
 
@@ -202,9 +203,9 @@
   display: inline-block;
   background: var(--primary-red);
   color: var(--white);
-  padding: 0.35rem 0.65rem;
-  border-radius: 4px;
-  font-size: 0.8125rem;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  font-size: 0.9375rem;
   font-weight: 600;
   border: none;
   cursor: pointer;
@@ -222,11 +223,11 @@
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 0.75rem;
+  padding: 0 1rem;
 }
 
 section {
-  padding: 1.25rem 0;
+  padding: 1.875rem 0;
 }
 
 /* Prevent sticky nav from covering section headings when linking from menu */
@@ -235,38 +236,38 @@ section {
 #programs,
 #news,
 #contact {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 4rem;
 }
 
 .section-title {
   text-align: center;
-  font-size: 1rem;
+  font-size: 1.5rem;
   color: var(--primary-blue);
-  margin-bottom: 0.9rem;
+  margin-bottom: 1.35rem;
   position: relative;
 }
 
 .section-title::after {
   content: "";
   display: block;
-  width: 40px;
-  height: 2px;
+  width: 50px;
+  height: 3px;
   background: var(--primary-red);
-  margin: 0.35rem auto;
+  margin: 0.5rem auto;
 }
 
 /* Cards */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 0.65rem;
-  margin-top: 0.65rem;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .card {
   background: var(--white);
   border-radius: 8px;
-  padding: 0.65rem;
+  padding: 1rem;
   box-shadow: var(--shadow);
   transition: transform 0.3s, box-shadow 0.3s;
 }
@@ -289,21 +290,21 @@ section {
 
 .card h3 {
   color: var(--primary-blue);
-  margin-bottom: 0.4rem;
-  font-size: 0.9375rem;
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
 }
 
 .card p {
   color: var(--text-gray);
-  margin-bottom: 0.4rem;
-  font-size: 0.8125rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 
 /* Events */
 .events-list {
   display: grid;
-  gap: 0.5rem;
-  margin-top: 0.65rem;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
 .events-list-grid {
@@ -312,9 +313,9 @@ section {
 
 .event-card {
   background: var(--light-gray);
-  padding: 0.5rem;
+  padding: 0.75rem;
   border-radius: 6px;
-  border-left: 3px solid var(--primary-red);
+  border-left: 4px solid var(--primary-red);
   transition: transform 0.3s;
 }
 
@@ -325,24 +326,24 @@ section {
 .event-date {
   color: var(--primary-red);
   font-weight: 600;
-  margin-bottom: 0.25rem;
-  font-size: 0.8125rem;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
 }
 
 .event-title {
   color: var(--primary-blue);
-  font-size: 0.875rem;
-  margin-bottom: 0.2rem;
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 .event-location {
   color: var(--text-gray);
-  font-size: 0.75rem;
+  font-size: 0.85rem;
 }
 
 .event-address {
-  font-size: 0.7rem;
-  margin-top: 0.15rem;
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
   color: var(--text-gray);
 }
 
@@ -363,9 +364,9 @@ section {
 }
 
 .event-detail-content p {
-  margin-bottom: 0.65rem;
-  line-height: 1.6;
-  font-size: 0.8125rem;
+  margin-bottom: 1rem;
+  line-height: 1.65;
+  font-size: 0.9rem;
   color: var(--text-gray);
 }
 
@@ -373,8 +374,8 @@ section {
 .meetings-list {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
-  margin-top: 0.65rem;
+  gap: 0.75rem;
+  margin-top: 1rem;
   max-width: 720px;
   margin-left: auto;
   margin-right: auto;
@@ -382,44 +383,44 @@ section {
 
 .meeting-card {
   background: var(--light-gray);
-  padding: 0.5rem;
-  border-radius: 6px;
-  border-left: 3px solid var(--primary-blue);
+  padding: 0.75rem;
+  border-radius: 8px;
+  border-left: 4px solid var(--primary-blue);
 }
 
 .meeting-date {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   color: var(--primary-blue);
   font-weight: 600;
-  margin-bottom: 0.2rem;
+  margin-bottom: 0.25rem;
 }
 
 .meeting-title {
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   color: var(--dark-gray);
 }
 
 .meeting-location {
-  margin-top: 0.25rem;
+  margin-top: 0.35rem;
 }
 
 .meeting-location-badge {
   display: inline-block;
-  padding: 0.15rem 0.4rem;
-  font-size: 0.7rem;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.8rem;
   font-weight: 600;
   background: var(--primary-blue);
   color: white;
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 /* Gallery */
 .gallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 0.4rem;
-  margin-top: 0.65rem;
+  gap: 0.6rem;
+  margin-top: 1rem;
 }
 
 .gallery img {
@@ -443,36 +444,36 @@ section {
 }
 
 .about-content p {
-  font-size: 0.8125rem;
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.65;
 }
 
 /* Contact */
 .contact-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 0.65rem;
-  margin-top: 0.65rem;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
 .contact-card {
   background: var(--light-gray);
-  padding: 0.65rem;
+  padding: 1rem;
   border-radius: 8px;
   text-align: center;
 }
 
 .contact-card h3 {
   color: var(--primary-blue);
-  margin-bottom: 0.25rem;
-  font-size: 0.875rem;
+  margin-bottom: 0.35rem;
+  font-size: 1rem;
 }
 
 .contact-card p {
   color: var(--text-gray);
-  margin-bottom: 0.2rem;
-  font-size: 0.8125rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
 }
 
 .contact-card a {
@@ -483,9 +484,9 @@ section {
 .footer {
   background: var(--dark-gray);
   color: var(--white);
-  padding: 1rem 0.75rem;
+  padding: 1.5rem 1rem;
   text-align: center;
-  font-size: 0.8125rem;
+  font-size: 0.9rem;
 }
 
 .footer-content {
@@ -496,8 +497,8 @@ section {
 .footer-links {
   display: flex;
   justify-content: center;
-  gap: 0.65rem;
-  margin: 0.65rem 0;
+  gap: 1rem;
+  margin: 1rem 0;
   flex-wrap: wrap;
 }
 
@@ -512,7 +513,7 @@ section {
 }
 
 .footer-tagline {
-  margin-top: 0.65rem;
+  margin-top: 1rem;
   opacity: 0.8;
 }
 
@@ -554,11 +555,11 @@ section {
   background: var(--white);
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
-  max-width: 380px;
+  max-width: 420px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
-  padding: 0.75rem;
+  padding: 1rem;
   position: relative;
 }
 
@@ -711,15 +712,15 @@ section {
   }
 
   .hero h1 {
-    font-size: 1rem;
+    font-size: 1.35rem;
   }
 
   .hero p {
-    font-size: 0.75rem;
+    font-size: 0.9rem;
   }
 
   .section-title {
-    font-size: 0.9375rem;
+    font-size: 1.25rem;
   }
 
   .card-grid {
@@ -758,17 +759,19 @@ section {
 }
 
 .admin-table th {
-  padding: 1rem;
+  padding: 0.5rem;
   text-align: left;
   font-weight: 600;
+  font-size: 0.8125rem;
   font-size: 0.9rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .admin-table td {
-  padding: 1rem;
+  padding: 0.5rem;
   border-bottom: 1px solid var(--light-gray);
+  font-size: 0.8125rem;
 }
 
 .admin-table tbody tr:hover {
@@ -782,11 +785,11 @@ section {
 .admin-input,
 .admin-select {
   width: 100%;
-  padding: 0.5rem;
+  padding: 0.3rem 0.4rem;
   border: 1px solid var(--light-gray);
   border-radius: 4px;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.8125rem;
 }
 
 .admin-input:focus,
@@ -831,11 +834,11 @@ section {
 }
 
 .admin-btn {
-  padding: 0.5rem 1rem;
+  padding: 0.3rem 0.5rem;
   border: none;
   border-radius: 4px;
   font-family: inherit;
-  font-size: 0.9rem;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
@@ -889,8 +892,8 @@ section {
 /* Admin Tabs */
 .admin-tabs {
   display: flex;
-  gap: 0.25rem;
-  margin-bottom: 0.65rem;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
   border-bottom: 1px solid var(--light-gray);
 }
 
@@ -919,15 +922,15 @@ section {
 /* Admin Form Card */
 .admin-form-card {
   background: var(--light-gray);
-  padding: 0.5rem;
-  border-radius: 6px;
-  margin-bottom: 0.65rem;
+  padding: 0.75rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 .admin-form-card h4 {
   color: var(--primary-blue);
-  margin-bottom: 0.4rem;
-  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
 }
 
 .admin-form-grid {
@@ -1005,36 +1008,36 @@ section {
 
 /* Auth Forms */
 .auth-form-container {
-  max-width: 380px;
+  max-width: 420px;
   margin: 0 auto;
 }
 
 .auth-form {
   background: var(--white);
-  padding: 0.75rem;
+  padding: 1rem;
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
 }
 
 .auth-field {
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .auth-field label {
   display: block;
   font-weight: 500;
   color: var(--dark-gray);
-  margin-bottom: 0.2rem;
-  font-size: 0.8125rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
 }
 
 .auth-input {
   width: 100%;
-  padding: 0.35rem 0.5rem;
+  padding: 0.5rem 0.65rem;
   border: 1px solid var(--light-gray);
-  border-radius: 4px;
+  border-radius: 5px;
   font-family: inherit;
-  font-size: 0.8125rem;
+  font-size: 0.9rem;
   color: var(--dark-gray);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -1086,21 +1089,21 @@ section {
 .auth-error {
   background: #fee;
   color: var(--primary-red);
-  padding: 0.35rem;
-  border-radius: 4px;
-  margin-bottom: 0.4rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+  margin-bottom: 0.6rem;
   border: 1px solid var(--primary-red);
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .auth-success {
   background: #efe;
   color: #2d5016;
-  padding: 0.35rem;
-  border-radius: 4px;
-  margin-bottom: 0.4rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+  margin-bottom: 0.6rem;
   border: 1px solid #4caf50;
-  font-size: 0.75rem;
+  font-size: 0.875rem;
 }
 
 .auth-input-error {
@@ -1109,17 +1112,17 @@ section {
 
 .auth-field-error {
   color: var(--primary-red);
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  margin-top: 0.15rem;
 }
 
 /* Password Requirements */
 .password-requirements {
-  margin-top: 0.4rem;
-  padding: 0.4rem;
+  margin-top: 0.6rem;
+  padding: 0.6rem;
   background: #f8f9fa;
-  border-radius: 4px;
-  font-size: 0.75rem;
+  border-radius: 5px;
+  font-size: 0.875rem;
 }
 
 .password-requirement {
@@ -1152,9 +1155,9 @@ section {
 .password-confirm-hint {
   display: flex;
   align-items: center;
-  gap: 0.3rem;
-  margin-top: 0.25rem;
-  font-size: 0.75rem;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
   color: var(--text-gray);
 }
 
@@ -1199,17 +1202,17 @@ section {
 
 .profile-section {
   background: var(--white);
-  padding: 0.65rem;
+  padding: 1rem;
   border-radius: 8px;
   box-shadow: var(--shadow-lg);
-  margin-bottom: 0.65rem;
+  margin-bottom: 1rem;
 }
 
 .profile-section h2 {
   margin-top: 0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
   color: var(--dark-gray);
-  font-size: 0.9375rem;
+  font-size: 1.25rem;
 }
 
 .profile-section-danger {
@@ -1254,13 +1257,13 @@ section {
 
 .expansion-panel-title {
   flex: 1;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
   margin: 0;
 }
 
 .expansion-panel-summary {
-  font-size: 0.75rem;
+  font-size: 0.875rem;
   color: var(--text-gray);
   font-weight: normal;
 }

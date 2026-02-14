@@ -124,7 +124,7 @@ function Admin() {
         location: data.location,
         address: data.address || null,
         slug: data.slug || null,
-        eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : "vsa"),
+        eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : data.status === "org" ? "org" : "vsa"),
         canceled: data.canceled,
         dateChanged: data.dateChanged,
         locationChanged: data.locationChanged,
@@ -145,13 +145,13 @@ function Admin() {
         location: data.location,
         address: data.address || null,
         slug: data.slug || null,
-        eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : "vsa"),
+        eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : data.status === "org" ? "org" : "vsa"),
         canceled: data.canceled,
         dateChanged: data.dateChanged,
         locationChanged: data.locationChanged,
       };
       const res = await createEvent(payload, token);
-      const newEvent = { ...res.event, status: res.event.eventType || "vsa" };
+      const newEvent = { ...res.event, status: res.event.eventType || "vsa", eventType: res.event.eventType };
       setEvents([...events, newEvent]);
     } catch (err) {
       setError(err.message);
