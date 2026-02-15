@@ -58,7 +58,7 @@ function Admin() {
           token ? fetchRegistrations(token).catch(() => []) : Promise.resolve([]),
         ]);
         setUsers(u);
-        setEvents(e.map((ev) => ({ ...ev, status: ev.eventType || "vsa" })));
+        setEvents(e.map((ev) => ({ ...ev, status: ev.eventType || "vsaNY" })));
         setPrograms(p);
         setNews(n);
         setRegistrations(reg);
@@ -124,7 +124,7 @@ function Admin() {
         location: data.location,
         address: data.address || null,
         slug: data.slug || null,
-        eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : data.status === "org" ? "org" : "vsa"),
+        eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : data.status === "org" ? "org" : data.status === "training" ? "training" : "vsa"),
         canceled: data.canceled,
         dateChanged: data.dateChanged,
         locationChanged: data.locationChanged,
@@ -145,7 +145,7 @@ function Admin() {
         location: data.location,
         address: data.address || null,
         slug: data.slug || null,
-        eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : data.status === "org" ? "org" : "vsa"),
+        eventType: data.eventType || (data.status === "shredvets" ? "shredvets" : data.status === "org" ? "org" : data.status === "training" ? "training" : "vsa"),
         canceled: data.canceled,
         dateChanged: data.dateChanged,
         locationChanged: data.locationChanged,

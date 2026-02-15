@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import { getMembershipPdfFilename } from "../utils/membership.js";
 
 dotenv.config();
 
@@ -374,6 +375,91 @@ Veterans Serving Veterans
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error("Error sending registration confirmation email:", error);
+    throw error;
+  }
+};
+
+/**
+ * Send a membership application PDF to the VSA.
+ * @param {Object} data - Form data (lastName, firstName, email, etc.)
+ * @param {Buffer} pdfBuffer - Generated PDF
+ */
+export const sendMembershipSubmission = async (data, pdfBuffer) => {
+  const toEmail = process.env.VSA_MEMBERSHIP_EMAIL || "veteranssportsmensassociation@gmail.com";
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+  const name = [data.lastName, data.firstName, data.mi].filter(Boolean).join(" ") || data.fullName || "Unknown";
+  const filename = getMembershipPdfFilename(data);
+
+  const mailOptions = {
+    from,
+    to: toEmail,
+    subject: 'VSA Membership Application',
+    text: `A new membership application has been submitted from ${name}. The completed application PDF is attached.`,
+    attachments: [
+      {
+        filename,
+        content: pdfBuffer,
+      },
+    ],
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Membership application submitted to VSA:", info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Error sending membership application:", error);
+    throw error;
+  }
+};
+
+/**
+ * Send a copy of the membership application PDF to the applicant.
+ * @param {Object} data - Form data (must include email)
+ * @param {Buffer} pdfBuffer - Generated PDF
+ */
+export const sendMembershipCopyToApplicant = async (data, pdfBuffer) => {
+  const applicantEmail = (data.email || "").trim();
+  if (!applicantEmail) {
+    console.warn("No applicant email; skipping copy to applicant.");
+    return { success: false, skipped: true };
+  }
+  const from = process.env.SMTP_FROM || process.env.SMTP_USER;
+  const name = [data.lastName, data.firstName, data.mi].filter(Boolean).join(" ") || "Applicant";
+  const filename = getMembershipPdfFilename(data);
+
+  const mailOptions = {
+    from,
+    to: applicantEmail,
+    subject: "Your VSA Membership Application – Copy",
+    text: `
+Hello ${data.firstName || name},
+
+Thank you for submitting your membership application to the Veterans Sportsmen's Association.
+
+A copy of your completed application (PDF) is attached for your records. The VSA has also received your application and will be in touch.
+
+If you have any questions, please contact the VSA.
+
+Veterans Sportsmens Association
+1335 Route 44 – Suite 1
+Pleasant Valley, NY 12569
+(845) 599-1911
+    `.trim(),
+    attachments: [
+      {
+        filename,
+        content: pdfBuffer,
+      },
+    ],
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log("Membership copy sent to applicant:", applicantEmail, info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error("Error sending membership copy to applicant:", error);
     throw error;
   }
 };

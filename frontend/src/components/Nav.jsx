@@ -12,6 +12,8 @@ const MAIN_NAV_LINKS = [
 ];
 
 const OTHER_SITES = [
+  { path: "/", label: "VSA - NY" },
+  { path: "/vsa-pa", label: "VSA-PA" },
   { path: "/shredvets", label: "ShredVets" },
   // Add more sites here as needed, e.g. { path: "/other", label: "Other Site" },
 ];
@@ -25,7 +27,12 @@ function Nav() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, logout, isAuthenticated, isAdmin, loading: authLoading } = useAuth();
-  const isHome = location.pathname === "/";
+  const pathname = location.pathname;
+  const isHome = pathname === "/";
+  const isVsaPA = pathname === "/vsa-pa" || pathname === "/vsa-pa-training" || pathname === "/vsa-pa-meetings";
+  const isShredvets = pathname === "/shredvets";
+  const basePath = isVsaPA ? "/vsa-pa" : isShredvets ? "/shredvets" : "/";
+  const isOnSectionedPage = isHome || pathname === "/vsa-pa" || isShredvets;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -57,6 +64,9 @@ function Nav() {
     if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
     closeAll();
   };
+
+  const anchorHref = (hash) => (hash ? `${basePath}#${hash}` : basePath);
+  const isCurrentPage = pathname === basePath;
 
   const handleLogout = () => {
     logout();
@@ -194,9 +204,9 @@ function Nav() {
       <div className={`nav-menu-panel ${menuOpen ? "active" : ""}`}>
         <ul className="nav-menu-links">
           <li>
-            {isHome ? (
+            {isOnSectionedPage && isCurrentPage ? (
               <a
-                href="#home"
+                href={anchorHref("home")}
                 onClick={(e) => {
                   e.preventDefault();
                   handleAnchorClick(e, "#home");
@@ -205,38 +215,54 @@ function Nav() {
                 Home
               </a>
             ) : (
-              <Link to="/" onClick={closeAll}>
+              <Link to={anchorHref("home")} onClick={closeAll}>
                 Home
               </Link>
             )}
           </li>
-          {MAIN_NAV_LINKS.filter((l) => l.href !== "#home").map(({ href, label }) => (
-            <li key={href}>
-              {isHome ? (
-                <a
-                  href={href}
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleAnchorClick(e, href);
-                  }}
-                >
-                  {label}
-                </a>
-              ) : (
-                <Link to={{ pathname: "/", hash: href.slice(1) }} onClick={closeAll}>
-                  {label}
-                </Link>
-              )}
-            </li>
-          ))}
+          {MAIN_NAV_LINKS.filter((l) => l.href !== "#home").map(({ href, label }) => {
+            const hash = href.slice(1);
+            return (
+              <li key={href}>
+                {isOnSectionedPage && isCurrentPage ? (
+                  <a
+                    href={anchorHref(hash)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleAnchorClick(e, href);
+                    }}
+                  >
+                    {label}
+                  </a>
+                ) : (
+                  <Link to={{ pathname: basePath, hash: `#${hash}` }} onClick={closeAll}>
+                    {label}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
           <li>
-            <Link to="/past-events" onClick={closeAll}>
+            <Link
+              to={isVsaPA ? "/vsa-pa-past-events" : isShredvets ? "/shredvets-past-events" : "/past-events"}
+              onClick={closeAll}
+            >
               Past Events
             </Link>
           </li>
           <li>
-            <Link to="/meetings" onClick={closeAll}>
+            <Link to={isVsaPA ? "/vsa-pa-training" : "/training"} onClick={closeAll}>
+              Training
+            </Link>
+          </li>
+          <li>
+            <Link to={isVsaPA ? "/vsa-pa-meetings" : "/meetings"} onClick={closeAll}>
               Organizational Meetings
+            </Link>
+          </li>
+          <li>
+            <Link to="/membership" onClick={closeAll}>
+              Membership
             </Link>
           </li>
         </ul>

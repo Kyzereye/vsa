@@ -10,9 +10,18 @@ function PastEvents({ eventType = "vsa" }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const title = eventType === "shredvets" ? "Past ShredVets Events" : "Past VSA Events";
-  const backLink = eventType === "shredvets" ? "/shredvets" : "/";
-  const backLinkText = eventType === "shredvets" ? "Back to ShredVets" : "Back to VSA Home";
+  const title =
+    eventType === "shredvets" ? "Past ShredVets Events" :
+    eventType === "vsaPA" ? "Past VSA-PA Events" :
+    "Past VSA Events";
+  const backLink =
+    eventType === "shredvets" ? "/shredvets" :
+    eventType === "vsaPA" ? "/vsa-pa" :
+    "/";
+  const backLinkText =
+    eventType === "shredvets" ? "Back to ShredVets" :
+    eventType === "vsaPA" ? "Back to VSA-PA" :
+    "Back to VSA Home";
 
   useEffect(() => {
     fetchEvents(eventType, { past: true })

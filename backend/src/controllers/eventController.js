@@ -67,9 +67,18 @@ export const getEvents = async (req, res) => {
     const params = [];
     const conditions = [];
 
-    if (eventType === "vsa") {
-      conditions.push("event_type IN ('vsa', 'shredvets')");
-    } else if (eventType === "shredvets" || eventType === "org") {
+    if (eventType === "vsa" || eventType === "vsaNY") {
+      conditions.push("event_type IN ('vsaNY', 'shredvets')");
+    } else if (eventType === "vsaPA") {
+      conditions.push("event_type = 'vsaPA'");
+    } else if (eventType === "shredvets") {
+      conditions.push("event_type = ?");
+      params.push(eventType);
+    } else if (eventType === "trainingNY" || eventType === "training") {
+      conditions.push("event_type = 'trainingNY'");
+    } else if (eventType === "orgNY" || eventType === "org") {
+      conditions.push("event_type = 'orgNY'");
+    } else if (["trainingPA", "orgPA"].includes(eventType)) {
       conditions.push("event_type = ?");
       params.push(eventType);
     }
@@ -174,8 +183,8 @@ export const createEvent = async (req, res) => {
       return res.status(400).json({ message: "Date, title, and location are required" });
     }
 
-    const allowed = ["vsa", "shredvets", "org"];
-    const event_type = allowed.includes(eventType) ? eventType : "vsa";
+    const allowed = ["vsaNY", "vsaPA", "shredvets", "org", "training"];
+    const event_type = allowed.includes(eventType) ? eventType : "vsaNY";
     const dateVal = String(date).trim().match(/^\d{4}-\d{2}-\d{2}/) ? `${date.replace(/T.*$/, "")} 00:00:00` : date;
 
     connection = await pool.getConnection();
@@ -250,9 +259,9 @@ export const updateEvent = async (req, res) => {
       values.push(slug || null);
     }
     if (eventType !== undefined) {
-      const allowed = ["vsa", "shredvets", "org"];
+      const allowed = ["vsaNY", "vsaPA", "shredvets", "trainingNY", "trainingPA", "orgNY", "orgPA"];
       updates.push("event_type = ?");
-      values.push(allowed.includes(eventType) ? eventType : "vsa");
+      values.push(allowed.includes(eventType) ? eventType : "vsaNY");
     }
     if (canceled !== undefined) {
       updates.push("canceled = ?");

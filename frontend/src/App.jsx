@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { Home, ShredVets, EventDetail, PastEvents, Admin, Login, Register, Profile, VerifyEmail, ForgotPassword, ResetPassword, Meetings } from "./pages";
+import { Home, ShredVets, VsaPA, VsaPATraining, VsaPAMeetings, EventDetail, PastEvents, Admin, Login, Register, Profile, VerifyEmail, ForgotPassword, ResetPassword, Meetings, Membership, Training } from "./pages";
 import { ScrollToTop, ProtectedRoute } from "./components";
 import "./App.css";
 
@@ -10,9 +10,15 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/shredvets" element={<ShredVets />} />
+        <Route path="/vsa-pa" element={<VsaPA />} />
+        <Route path="/vsa-pa-training" element={<VsaPATraining />} />
+        <Route path="/vsa-pa-meetings" element={<VsaPAMeetings />} />
         <Route path="/past-events" element={<PastEvents eventType="vsa" />} />
+        <Route path="/training" element={<Training />} />
         <Route path="/meetings" element={<Meetings />} />
+        <Route path="/membership" element={<Membership />} />
         <Route path="/shredvets-past-events" element={<PastEvents eventType="shredvets" />} />
+        <Route path="/vsa-pa-past-events" element={<PastEvents eventType="vsaPA" />} />
         <Route path="/events/:slug" element={<EventDetail />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />

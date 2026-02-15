@@ -16,13 +16,13 @@ function formatMeetingDate(dateStr) {
   });
 }
 
-function Meetings() {
+function VsaPAMeetings() {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchEvents("orgNY")
+    fetchEvents("orgPA")
       .then(setMeetings)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -34,11 +34,11 @@ function Meetings() {
       <main>
         <section className="hero" id="home">
           <div className="hero-content">
-            <h1>Organizational Meetings</h1>
-            <p style={{ opacity: 0.95 }}>VSA board and general member meetings — NY, PA, and combined</p>
+            <h1>VSA-PA Organizational Meetings</h1>
+            <p style={{ opacity: 0.95 }}>VSA Pennsylvania chapter board and general member meetings</p>
             <p style={{ marginTop: "1rem" }}>
-              <Link to="/" className="cta-button" style={{ background: "var(--dark-gray)" }}>
-                Back to VSA Home
+              <Link to="/vsa-pa" className="cta-button" style={{ background: "var(--dark-gray)" }}>
+                Back to VSA-PA
               </Link>
             </p>
           </div>
@@ -54,14 +54,14 @@ function Meetings() {
               <p style={{ textAlign: "center", color: "var(--text-gray)" }}>No meetings scheduled.</p>
             ) : (
               <div className="meetings-list">
-                {meetings.map(({ id, date, title, location }) => (
-                  <div key={id} className="meeting-card">
+                {meetings.map(({ id, date, title, location, slug }) => (
+                  <Link key={id} to={`/events/${slug || id}`} className="meeting-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
                     <div className="meeting-date">{formatMeetingDate(date)}</div>
                     <div className="meeting-title">{title}</div>
                     <div className="meeting-location">
                       <span className="meeting-location-badge">{location}</span>
                     </div>
-                  </div>
+                  </Link>
                 ))}
               </div>
             )}
@@ -73,4 +73,4 @@ function Meetings() {
   );
 }
 
-export default Meetings;
+export default VsaPAMeetings;

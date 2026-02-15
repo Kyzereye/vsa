@@ -370,6 +370,36 @@ section {
   color: var(--text-gray);
 }
 
+/* Training page – past list (name + date only) */
+.training-past-list {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+  max-width: 640px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.training-past-item {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--light-gray);
+  font-size: 0.95rem;
+  color: var(--dark-gray);
+}
+
+.training-past-item:last-child {
+  border-bottom: none;
+}
+
+.training-past-title {
+  font-weight: 600;
+  color: var(--primary-blue);
+}
+
+.training-past-date {
+  color: var(--text-gray);
+}
+
 /* Organizational meetings list */
 .meetings-list {
   display: flex;
@@ -1010,6 +1040,33 @@ section {
 .auth-form-container {
   max-width: 420px;
   margin: 0 auto;
+}
+
+.membership-section-title {
+  font-size: 1.1rem;
+  color: var(--primary-blue);
+  margin: 1.25rem 0 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.membership-section-title:first-of-type {
+  margin-top: 0;
+}
+
+.membership-tshirt-link {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.95rem;
+  color: var(--primary-blue);
+  text-decoration: underline;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.membership-tshirt-link:hover {
+  color: var(--primary-red);
 }
 
 .auth-form {

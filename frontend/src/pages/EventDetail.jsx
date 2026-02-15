@@ -66,9 +66,33 @@ function EventDetail() {
 
   const { date, title, location, address, subtitle, details } = event;
   const isShredVetsEvent = event.eventType === "shredvets" || subtitle === "ShredVets Trip";
-  const backLink = isShredVetsEvent ? "/shredvets#events" : "/#events";
-  const backLinkText = isShredVetsEvent ? "Back to ShredVets Events" : "Back to VSA Events";
-  const viewAllText = isShredVetsEvent ? "View All ShredVets Events" : "View All VSA Events";
+  const isTrainingNYEvent = event.eventType === "trainingNY";
+  const isTrainingPAEvent = event.eventType === "trainingPA";
+  const isOrgPAEvent = event.eventType === "orgPA";
+  const isVsaPAEvent = event.eventType === "vsaPA";
+  const backLink =
+    isTrainingNYEvent ? "/training" :
+    isTrainingPAEvent ? "/vsa-pa-training" :
+    isOrgPAEvent ? "/vsa-pa-meetings" :
+    isShredVetsEvent ? "/shredvets#events" :
+    isVsaPAEvent ? "/vsa-pa#events" :
+    "/#events";
+  const backLinkText =
+    isTrainingNYEvent ? "Back to Training" :
+    isTrainingPAEvent ? "Back to VSA-PA Training" :
+    isOrgPAEvent ? "Back to VSA-PA Meetings" :
+    isShredVetsEvent ? "Back to ShredVets Events" :
+    isVsaPAEvent ? "Back to VSA-PA Events" :
+    "Back to VSA Events";
+  const viewAllText =
+    isTrainingNYEvent ? "View All Training" :
+    isTrainingPAEvent ? "View All VSA-PA Training" :
+    isOrgPAEvent ? "View All VSA-PA Meetings" :
+    isShredVetsEvent ? "View All ShredVets Events" :
+    isVsaPAEvent ? "View All VSA-PA Events" :
+    "View All VSA Events";
+  const detailsHeading = (isTrainingNYEvent || isTrainingPAEvent) ? "Course Details" : isShredVetsEvent ? "Trip Details" : "Event Details";
+  const registerButtonText = (isTrainingNYEvent || isTrainingPAEvent) ? "Register for this course" : isShredVetsEvent ? "Register for this trip" : "Register for this event";
   const hasDetails = details && details.length > 0;
 
   return (
@@ -123,7 +147,7 @@ function EventDetail() {
 
         <section>
           <div className="container">
-            <h2 className="section-title">Trip Details</h2>
+            <h2 className="section-title">{detailsHeading}</h2>
             <div className="event-detail-content">
               {hasDetails ? (
                 details.map((paragraph, i) => (
@@ -142,7 +166,7 @@ function EventDetail() {
                   className="cta-button"
                   onClick={() => setRegistrationOpen(true)}
                 >
-                  Register for this trip
+                  {registerButtonText}
                 </button>
               )}
             </p>

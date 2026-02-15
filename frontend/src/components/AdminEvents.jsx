@@ -24,7 +24,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       location: event.location,
       address: event.address || "",
       slug: event.slug || "",
-      eventType: event.eventType || event.status || "vsa",
+      eventType: event.eventType || event.status || "vsaNY",
       canceled: event.canceled || false,
       dateChanged: event.dateChanged || false,
       locationChanged: event.locationChanged || false,
@@ -162,9 +162,13 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                 onChange={handleChange}
                 className="admin-input"
               >
-                <option value="vsa">VSA only (home page)</option>
+                <option value="vsaNY">VSA NY (home page)</option>
+                <option value="vsaPA">VSA PA</option>
                 <option value="shredvets">ShredVets</option>
-                <option value="org">Organizational meeting</option>
+                <option value="trainingNY">Training NY</option>
+                <option value="trainingPA">Training PA</option>
+                <option value="orgNY">Org meeting NY</option>
+                <option value="orgPA">Org meeting PA</option>
               </select>
             </div>
             <div>
@@ -261,6 +265,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                         <option value="vsa">VSA only</option>
                         <option value="shredvets">ShredVets</option>
                         <option value="org">Org meeting</option>
+                        <option value="training">Training</option>
                       </select>
                     </td>
                     <td>
@@ -310,7 +315,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                       )}
                     </td>
                     <td>
-                      {({ vsa: "VSA only", shredvets: "ShredVets", org: "Org meeting" }[event.eventType || event.status] || "VSA only")}
+                      {({ vsaNY: "VSA NY", vsaPA: "VSA PA", shredvets: "ShredVets", trainingNY: "Training NY", trainingPA: "Training PA", orgNY: "Org NY", orgPA: "Org PA" }[event.eventType || event.status] || "VSA NY")}
                     </td>
                     <td>
                       {event.canceled && (

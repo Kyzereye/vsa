@@ -9,6 +9,7 @@ import newsRoutes from "./routes/news.js";
 import emailVerificationRoutes from "./routes/emailVerification.js";
 import registrationRoutes from "./routes/registrations.js";
 import galleryRoutes from "./routes/gallery.js";
+import membershipRoutes from "./routes/membership.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -40,6 +41,7 @@ app.use("/api/news", newsRoutes);
 app.use("/api/email", emailVerificationRoutes);
 app.use("/api/registrations", registrationRoutes);
 app.use("/api/gallery", galleryRoutes);
+app.use("/api/membership", membershipRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

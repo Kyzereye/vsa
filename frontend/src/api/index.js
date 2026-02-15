@@ -332,3 +332,28 @@ export async function deleteGalleryImage(id, token) {
     throw new Error(data.message || "Failed to delete image");
   }
 }
+
+// Membership application (VSA membership, not website account)
+export async function getMembershipPdf(data) {
+  const res = await fetch(`${API_BASE}/membership/pdf`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.message || "Failed to generate PDF");
+  }
+  return res.blob();
+}
+
+export async function submitMembership(data) {
+  const res = await fetch(`${API_BASE}/membership/submit`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  const out = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(out.message || "Failed to submit application");
+  return out;
+}

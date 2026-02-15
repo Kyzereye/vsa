@@ -1,5 +1,8 @@
 export { default as Home } from "./Home";
 export { default as ShredVets } from "./ShredVets";
+export { default as VsaPA } from "./VsaPA";
+export { default as VsaPATraining } from "./VsaPATraining";
+export { default as VsaPAMeetings } from "./VsaPAMeetings";
 export { default as EventDetail } from "./EventDetail";
 export { default as PastEvents } from "./PastEvents";
 export { default as Admin } from "./Admin";
@@ -10,3 +13,5 @@ export { default as VerifyEmail } from "./VerifyEmail";
 export { default as ForgotPassword } from "./ForgotPassword";
 export { default as ResetPassword } from "./ResetPassword";
 export { default as Meetings } from "./Meetings";
+export { default as Membership } from "./Membership";
+export { default as Training } from "./Training";

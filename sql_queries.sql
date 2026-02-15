@@ -48,7 +48,7 @@ CREATE INDEX idx_users_email_verified ON users(email_verified);
 -- EVENTS TABLE
 -- ============================================
 -- Combined table for both VSA and ShredVets events
--- Use event_type to distinguish: 'vsa' or 'shredvets'
+-- event_type: vsaNY/vsaPA (events), trainingNY/trainingPA, orgNY/orgPA (meetings), shredvets — NY vs PA kept separate
 CREATE TABLE IF NOT EXISTS events (
     id INT AUTO_INCREMENT PRIMARY KEY,
     date TIMESTAMP NOT NULL,
@@ -56,7 +56,7 @@ CREATE TABLE IF NOT EXISTS events (
     location VARCHAR(255) NOT NULL,
     address VARCHAR(255),
     slug VARCHAR(255) UNIQUE,
-    event_type ENUM('vsa', 'shredvets', 'org') NOT NULL DEFAULT 'vsa',
+    event_type ENUM('vsaNY', 'vsaPA', 'shredvets', 'trainingNY', 'trainingPA', 'orgNY', 'orgPA') NOT NULL DEFAULT 'vsaNY',
     canceled BOOLEAN NOT NULL DEFAULT FALSE,
     date_changed BOOLEAN NOT NULL DEFAULT FALSE,
     location_changed BOOLEAN NOT NULL DEFAULT FALSE,
@@ -211,34 +211,43 @@ INSERT INTO events (id, date, title, location, address, slug, event_type, cancel
 (1, '2026-01-31 00:00:00', 'Jack Frost Ski Resort', 'Jack Frost Ski Resort', '434 Jack Frost Mountain Rd, White Haven, PA 18661', 'jack-frost-jan-31', 'shredvets', FALSE, FALSE, FALSE),
 (2, '2026-02-03 00:00:00', 'Ski Windham Mountain', 'Windham Mountain', '19 Resort Dr, Windham, NY 12496', 'shredvets-windham-feb-03', 'shredvets', FALSE, FALSE, FALSE),
 (3, '2026-02-12 00:00:00', 'Ski Windham Mountain', 'Windham Mountain', '19 Resort Dr, Windham, NY 12496', 'shredvets-windham-feb-12', 'shredvets', FALSE, FALSE, FALSE),
-(4, '2026-02-14 00:00:00', 'Ski Whistler Ski Resort 2027', 'Whistler', 'Whistler, British Columbia, Canada', 'whistler-ski-resort-2027', 'shredvets', FALSE, FALSE, FALSE),
+(4, '2027-02-14 00:00:00', 'Ski Whistler Ski Resort 2027', 'Whistler', 'Whistler, British Columbia, Canada', 'whistler-ski-resort-2027', 'shredvets', FALSE, FALSE, FALSE),
 (5, '2026-02-17 00:00:00', 'Ski Plattekill Mountain', 'Plattekill Mountain', '469 Plattekill Rd, Roxbury, NY 12474', 'shredvets-plattekill-feb-17', 'shredvets', FALSE, FALSE, FALSE),
 (6, '2026-02-20 00:00:00', 'Ski Thunder Ridge', 'Thunder Ridge', '137 Birch Hill Rd, Patterson, NY 12563', 'shredvets-thunder-ridge-feb-20', 'shredvets', FALSE, FALSE, FALSE),
 (7, '2026-02-27 00:00:00', 'Ski Plattekill Mountain', 'Plattekill Mountain', '469 Plattekill Rd, Roxbury, NY 12474', 'shredvets-plattekill-feb-27', 'shredvets', FALSE, FALSE, FALSE),
 (8, '2026-03-13 00:00:00', 'Ski Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-13', 'shredvets', FALSE, FALSE, FALSE),
 -- VSA-only events
-(9, '2026-02-07 00:00:00', 'NRA Great Outdoor Show 2026', 'Pennsylvania Farm Show Complex', '2300 N Cameron St, Harrisburg, PA', 'nra-great-outdoor-show-2026', 'vsa', FALSE, FALSE, FALSE),
-(10, '2026-02-07 00:00:00', 'Team River Runner - Kayaking Workshop', 'Montrose VA', 'Montrose VA - Pool', 'team-river-runner-kayaking-workshop-feb-07', 'vsa', FALSE, FALSE, FALSE),
-(11, '2026-03-07 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-mar-07', 'vsa', FALSE, FALSE, FALSE),
-(12, '2026-03-11 00:00:00', 'DCSO Game Dinner', 'Poughkeepsie', NULL, 'dcso-game-dinner-mar-11', 'vsa', FALSE, FALSE, FALSE),
-(13, '2026-03-14 00:00:00', 'Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-14', 'vsa', FALSE, FALSE, FALSE),
-(14, '2026-03-21 00:00:00', 'NRA CCW Course', 'Veterans Sportsmens Association', NULL, 'nra-ccw-course-mar-21', 'vsa', FALSE, FALSE, FALSE),
-(15, '2026-03-21 00:00:00', 'New York State Pistol Permit Safety Course', 'Veterans Sportsmens Association', NULL, 'nys-pistol-permit-safety-course-mar-21', 'vsa', FALSE, FALSE, FALSE),
-(16, '2026-04-04 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-04', 'vsa', FALSE, FALSE, FALSE),
-(17, '2026-04-18 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-18', 'vsa', FALSE, FALSE, FALSE),
-(18, '2026-04-25 00:00:00', '51st Wappingers Creek Water Derby', 'Pleasant Valley', NULL, '51st-wappingers-creek-water-derby', 'vsa', FALSE, FALSE, FALSE),
-(19, '2026-05-30 00:00:00', 'Introduction to Precision Rifle Shooting', 'Tommy Gun Warehouse', NULL, 'introduction-precision-rifle-shooting-may-30', 'vsa', FALSE, FALSE, FALSE),
-(20, '2026-05-30 00:00:00', 'NRA Basic Rifle Course', 'Greeley', NULL, 'nra-basic-rifle-course-may-30', 'vsa', FALSE, FALSE, FALSE),
--- Organizational meetings (event_type = 'org')
-(21, '2026-03-08 00:00:00', 'First Quarterly Meeting', 'PA', NULL, 'org-2026-03-08-pa', 'org', FALSE, FALSE, FALSE),
-(22, '2026-04-19 00:00:00', 'Second Quarter Board and General Member Meeting', 'NY', NULL, 'org-2026-04-19-ny', 'org', FALSE, FALSE, FALSE),
-(23, '2026-05-03 00:00:00', 'Second Quarter Board and General Member Meeting', 'PA', NULL, 'org-2026-05-03-pa', 'org', FALSE, FALSE, FALSE),
-(24, '2026-07-12 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'NY', NULL, 'org-2026-07-12-ny', 'org', FALSE, FALSE, FALSE),
-(25, '2026-08-09 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'PA', NULL, 'org-2026-08-09-pa', 'org', FALSE, FALSE, FALSE),
-(26, '2026-12-12 00:00:00', 'Veterans Sportsmens Association Fourth Quarter Meeting', 'NY & PA', NULL, 'org-2026-12-12-ny-pa', 'org', FALSE, FALSE, FALSE);
+(9, '2026-02-07 00:00:00', 'NRA Great Outdoor Show 2026', 'Pennsylvania Farm Show Complex', '2300 N Cameron St, Harrisburg, PA', 'nra-great-outdoor-show-2026', 'vsaPA', FALSE, FALSE, FALSE),
+(10, '2026-02-07 00:00:00', 'Team River Runner - Kayaking Workshop', 'Montrose VA', 'Montrose VA - Pool', 'team-river-runner-kayaking-workshop-feb-07', 'vsaNY', FALSE, FALSE, FALSE),
+(11, '2026-03-07 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-mar-07', 'vsaNY', FALSE, FALSE, FALSE),
+(12, '2026-03-11 00:00:00', 'DCSO Game Dinner', 'Poughkeepsie', NULL, 'dcso-game-dinner-mar-11', 'vsaNY', FALSE, FALSE, FALSE),
+(13, '2026-03-14 00:00:00', 'Shawnee Mountain', 'Shawnee Mountain', '401 Hollow Rd, East Stroudsburg, PA 18301', 'shawnee-mountain-mar-14', 'vsaNY', FALSE, FALSE, FALSE),
+(16, '2026-04-04 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-04', 'vsaNY', FALSE, FALSE, FALSE),
+(17, '2026-04-18 00:00:00', 'Wappingers Creek Clean Up', 'Veterans Sportsmens Association', NULL, 'wappingers-creek-clean-up-apr-18', 'vsaNY', FALSE, FALSE, FALSE),
+(18, '2026-04-25 00:00:00', '51st Wappingers Creek Water Derby', 'Pleasant Valley', NULL, '51st-wappingers-creek-water-derby', 'vsaNY', FALSE, FALSE, FALSE),
+-- Training events: trainingNY (NY), trainingPA (PA)
+(14, '2026-03-21 00:00:00', 'NRA CCW Course', 'Veterans Sportsmens Association', NULL, 'nra-ccw-course-mar-21', 'trainingNY', FALSE, FALSE, FALSE),
+(15, '2026-03-21 00:00:00', 'New York State Pistol Permit Safety Course', 'Veterans Sportsmens Association', NULL, 'nys-pistol-permit-safety-course-mar-21', 'trainingNY', FALSE, FALSE, FALSE),
+(19, '2026-05-30 00:00:00', 'Introduction to Precision Rifle Shooting', 'Tommy Gun Warehouse', NULL, 'introduction-precision-rifle-shooting-may-30', 'trainingNY', FALSE, FALSE, FALSE),
+(20, '2026-05-30 00:00:00', 'NRA Basic Rifle Course', 'Greeley', NULL, 'nra-basic-rifle-course-may-30', 'trainingNY', FALSE, FALSE, FALSE),
+(27, '2026-05-30 00:00:00', 'Precision Rifle Shoot', 'Tommy Gun Warehouse', NULL, 'precision-rifle-shoot-may-30', 'trainingPA', FALSE, FALSE, FALSE),
+-- Organizational meetings: orgNY (NY), orgPA (PA)
+(21, '2026-03-08 00:00:00', 'First Quarterly Meeting', 'PA', NULL, 'org-2026-03-08-pa', 'orgPA', FALSE, FALSE, FALSE),
+(22, '2026-04-19 00:00:00', 'Second Quarter Board and General Member Meeting', 'NY', NULL, 'org-2026-04-19-ny', 'orgNY', FALSE, FALSE, FALSE),
+(23, '2026-05-03 00:00:00', 'Second Quarter Board and General Member Meeting', 'PA', NULL, 'org-2026-05-03-pa', 'orgPA', FALSE, FALSE, FALSE),
+(24, '2026-07-12 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'NY', NULL, 'org-2026-07-12-ny', 'orgNY', FALSE, FALSE, FALSE),
+(25, '2026-08-09 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'PA', NULL, 'org-2026-08-09-pa', 'orgPA', FALSE, FALSE, FALSE),
+(26, '2026-12-12 00:00:00', 'Veterans Sportsmens Association Fourth Quarter Meeting', 'NY & PA', NULL, 'org-2026-12-12-ny-pa', 'orgNY', FALSE, FALSE, FALSE),
+-- VSA-PA events (event_type = 'vsaPA')
+(28, '2026-05-30 00:00:00', 'VSA Precision Rifle Shoot', 'Tommy Gun Warehouse', 'Greeley PA', 'vsa-pa-precision-rifle-may-30', 'vsaPA', FALSE, FALSE, FALSE),
+(29, '2026-07-25 00:00:00', 'VSA Delaware River Kayaking', 'Dingmans Ferry PA', 'Dingmans Ferry Boat Launch', 'vsa-pa-kayaking-jul-25', 'vsaPA', FALSE, FALSE, FALSE),
+(30, '2026-08-22 00:00:00', 'Camp Freedom Summer Salute', 'Camp Freedom', 'Carbondale PA', 'vsa-pa-camp-freedom-aug-22', 'vsaPA', FALSE, FALSE, FALSE),
+(31, '2026-10-10 00:00:00', 'Let Freedom Ring Machine Gun Shoot', 'Kahr Arms', '105 Kahr Ave, Greeley PA', 'vsa-pa-let-freedom-ring-oct-10', 'vsaPA', FALSE, FALSE, FALSE),
+(32, '2026-10-10 00:00:00', 'Rod of Iron Freedom Festival', 'Kahr Arms', '105 Kahr Ave, Greeley PA', 'vsa-pa-rod-of-iron-oct-10', 'vsaPA', FALSE, FALSE, FALSE),
+(33, '2026-11-11 00:00:00', 'Veterans Day Dinner', 'Pike County PA', NULL, 'vsa-pa-veterans-day-nov-11', 'vsaPA', FALSE, FALSE, FALSE);
 
 -- Reset auto increment for events table (optional)
--- ALTER TABLE events AUTO_INCREMENT = 27;
+-- ALTER TABLE events AUTO_INCREMENT = 34;
 
 -- Insert Event Details (one row per event; event_id 1-20 matches events.id)
 INSERT INTO event_details (event_id, slug, subtitle, details) VALUES
@@ -362,7 +371,45 @@ INSERT INTO event_details (event_id, slug, subtitle, details) VALUES
     'NRA Basic Rifle Course in Greeley. This course covers rifle safety, fundamentals, and range qualification. Ideal for new shooters and those seeking NRA certification.',
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
     'Registration and fee required. Contact the VSA for dates and to reserve your spot.'
+)),
+(27, 'precision-rifle-shoot-may-30', NULL,
+ JSON_ARRAY(
+    'Precision Rifle Shoot at Tommy Gun Warehouse. Scoped rifle shooting and long-range marksmanship.',
+    'Registration and fee required. Contact the VSA for details.'
+)),
+-- VSA-PA events (ids 28-33)
+(28, 'vsa-pa-precision-rifle-may-30', NULL,
+ JSON_ARRAY(
+    'VSA Members and their guests will have full access to the 600 Meter precision rifle range at Tommy Gun Warehouse in Greeley PA. Catered lunch is included.',
+    'Registration and range fee required. Contact the VSA-PA chapter for details.'
+)),
+(29, 'vsa-pa-kayaking-jul-25', NULL,
+ JSON_ARRAY(
+    'We will be kayaking down the Delaware River in the Dingmans PA area. This is a half-day trip; participants must bring their own raft, canoe, or kayak. A limited number of kayaks are available for free use.',
+    'Put-in and take-out locations will be decided a week before the trip based on water levels. Meet at the Dingmans Ferry boat launch at 1300 hours.',
+    'Contact the VSA-PA chapter to register.'
+)),
+(30, 'vsa-pa-camp-freedom-aug-22', NULL,
+ JSON_ARRAY(
+    'Saturday 22 August at Camp Freedom in Carbondale PA—Summer Salute event. Join VSA-PA for this community celebration.',
+    'Registration required. Contact the VSA-PA chapter for details.'
+)),
+(31, 'vsa-pa-let-freedom-ring-oct-10', NULL,
+ JSON_ARRAY(
+    'VSA Machine Gun Shoot at Kahr Arms in Greeley PA. VSA members and guests will have access to the range for this special event.',
+    'Registration and fee required. Contact the VSA-PA chapter for details.'
+)),
+(32, 'vsa-pa-rod-of-iron-oct-10', NULL,
+ JSON_ARRAY(
+    'The Rod of Iron Freedom Festival is a free 2nd Amendment event at Kahr Arms, 105 Kahr Ave in Greeley, Pennsylvania. Patriotic displays, food and vendor booths, shooting competitions, family activities, fireworks, educational seminars, live music, and more.',
+    'No registration required. Free admission. Contact the VSA-PA chapter for more information.'
+)),
+(33, 'vsa-pa-veterans-day-nov-11', NULL,
+ JSON_ARRAY(
+    'Our First Annual Pike County Veterans Day Dinner and Turkey Shoot. Free Thanksgiving-style dinner for Pike County PA Veterans after a traditional turkey shoot on the range.',
+    'Date and venue information coming soon. Contact the VSA-PA chapter for updates.'
 ));
+SET FOREIGN_KEY_CHECKS = 1;
 
 
 -- Insert Programs
@@ -395,73 +442,3 @@ INSERT INTO gallery_images (id, url, alt_text, caption, display_order, event_id)
 (5, 'https://static.wixstatic.com/media/30c799_958dd0efbd1c4f26bba179a9dd2d1261~mv2.jpg', 'VSA Activity', NULL, 5, NULL),
 (6, 'https://static.wixstatic.com/media/30c799_10bf358ef0a74b6ab84752c574bcacfe~mv2.jpg', 'VSA Program', NULL, 6, NULL);
 
--- Reset sequence for gallery_images table
--- Reset auto increment for gallery_images table (optional - only needed if inserting with specific IDs)
--- ALTER TABLE gallery_images AUTO_INCREMENT = 7;
-
--- ============================================
--- MIGRATION: Add 'org' to events.event_type and insert org meetings (if not already present)
--- ALTER TABLE events MODIFY COLUMN event_type ENUM('vsa', 'shredvets', 'org') NOT NULL DEFAULT 'vsa';
--- INSERT INTO events (date, title, location, address, slug, event_type, canceled, date_changed, location_changed) VALUES
--- ('2026-03-08 00:00:00', 'First Quarterly Meeting', 'PA', NULL, 'org-2026-03-08-pa', 'org', FALSE, FALSE, FALSE),
--- ('2026-04-19 00:00:00', 'Second Quarter Board and General Member Meeting', 'NY', NULL, 'org-2026-04-19-ny', 'org', FALSE, FALSE, FALSE),
--- ('2026-05-03 00:00:00', 'Second Quarter Board and General Member Meeting', 'PA', NULL, 'org-2026-05-03-pa', 'org', FALSE, FALSE, FALSE),
--- ('2026-07-12 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'NY', NULL, 'org-2026-07-12-ny', 'org', FALSE, FALSE, FALSE),
--- ('2026-08-09 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'PA', NULL, 'org-2026-08-09-pa', 'org', FALSE, FALSE, FALSE),
--- ('2026-12-12 00:00:00', 'Veterans Sportsmens Association Fourth Quarter Meeting', 'NY & PA', NULL, 'org-2026-12-12-ny-pa', 'org', FALSE, FALSE, FALSE);
-
--- MIGRATION: Add event_id to gallery_images (run if table already exists without event_id)
--- ============================================
--- ALTER TABLE gallery_images ADD COLUMN event_id INT NULL;
--- ALTER TABLE gallery_images ADD CONSTRAINT fk_gallery_event FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL;
--- CREATE INDEX idx_gallery_event_id ON gallery_images(event_id);
-
--- MIGRATION: Add password_reset_tokens table (run if table does not exist)
--- CREATE TABLE IF NOT EXISTS password_reset_tokens (
---     id INT AUTO_INCREMENT PRIMARY KEY,
---     user_id INT NOT NULL,
---     token VARCHAR(255) UNIQUE NOT NULL,
---     expires_at TIMESTAMP NOT NULL,
---     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
---     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
--- );
--- CREATE INDEX idx_password_reset_token ON password_reset_tokens(token);
--- CREATE INDEX idx_password_reset_expires ON password_reset_tokens(expires_at);
-
--- ============================================
--- NOTES
--- ============================================
--- 1. Password hashes in the INSERT statements are placeholders.
---    You'll need to generate actual bcrypt hashes before inserting users.
---    Use: bcrypt.hashSync('password', 10)
---
--- 2. The events table has one row per unique event. event_type = 'shredvets' means the event appears on BOTH the VSA page and the ShredVets page; event_type = 'vsa' means VSA page only. Backend: VSA page uses WHERE event_type IN ('vsa', 'shredvets'); ShredVets page uses WHERE event_type = 'shredvets'.
---
--- 3. Event details are stored as JSON for flexibility (event_details.slug matches events.slug).
---    Query example: SELECT JSON_EXTRACT(details, '$[0]') FROM event_details WHERE slug = 'jack-frost-ski-resort-jan-31'
---
--- 4. Programs use string IDs (like 'shredvets') instead of auto-increment integers.
---    This allows for easier referencing in code.
---
--- 5. Event registrations can be anonymous (user_id = NULL) or linked to a user account.
---
--- 6. This file uses MySQL syntax:
---    - AUTO_INCREMENT instead of SERIAL
---    - TINYINT(1) instead of BOOLEAN (0/1 instead of true/false)
---    - ENUM instead of CHECK constraints
---    - JSON instead of JSONB
---    - ON UPDATE CURRENT_TIMESTAMP for updated_at
---
--- 7. For MySQL, updated_at automatically updates with ON UPDATE CURRENT_TIMESTAMP.
---    No trigger needed!
---    CREATE OR REPLACE FUNCTION update_updated_at_column()
---    RETURNS TRIGGER AS $$
---    BEGIN
---        NEW.updated_at = CURRENT_TIMESTAMP;
---        RETURN NEW;
---    END;
---    $$ language 'plpgsql';
---
---    CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
---    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
---    (Repeat for other tables)
