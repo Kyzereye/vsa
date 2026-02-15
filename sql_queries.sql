@@ -194,7 +194,7 @@ CREATE INDEX idx_registrations_email ON event_registrations(email);
 -- Default admin: admin@vsa.org / admin123
 -- Default member: john@example.com / password123
 INSERT INTO users (id, name, email, phone, password_hash, role, status, join_date, email_opt_in, email_verified) VALUES
-(1, 'Jeff Kyzer', 'kyzereye@gmail.com', '3038174277', '$2a$10$ySjXwMRQOPyV5PqXtL6AruOWuDElPMmb253CJUJtEUbOEL/5zx5.W', 'admin', 'active', '2024-01-01', 0, 1),
+(1, 'Jeff Kyzer', 'kyzereye@gmail.com', '3038174277', '$2a$10$zo0RuHqanlueULMwJJqkwuDshveGb7PqWvjVstxBUbbxrMhbFVeQ6', 'admin', 'active', '2024-01-01', 0, 1),
 (2, 'Noel Dillon', 'n.dillon@holtec.com', '8455195619', '$2a$10$BVNOhsbKRd/V.LpqpmkvJeT84aZ9.c0HyvdK9Bv43oWw9IWJdiGAy', 'admin', 'active', '2024-01-31', 0, 1);
 
 -- Reset auto increment for users table (optional - only needed if inserting with specific IDs)
