@@ -237,7 +237,7 @@ INSERT INTO events (id, date, title, location, address, slug, event_type, cancel
 (23, '2026-05-03 00:00:00', 'Second Quarter Board and General Member Meeting', 'PA', NULL, 'org-2026-05-03-pa', 'orgPA', FALSE, FALSE, FALSE),
 (24, '2026-07-12 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'NY', NULL, 'org-2026-07-12-ny', 'orgNY', FALSE, FALSE, FALSE),
 (25, '2026-08-09 00:00:00', 'Veterans Sportsmens Association Third Quarter Meeting', 'PA', NULL, 'org-2026-08-09-pa', 'orgPA', FALSE, FALSE, FALSE),
-(26, '2026-12-12 00:00:00', 'Veterans Sportsmens Association Fourth Quarter Meeting', 'NY & PA', NULL, 'org-2026-12-12-ny-pa', 'org', FALSE, FALSE, FALSE),
+(26, '2026-12-12 00:00:00', 'Veterans Sportsmens Association Fourth Quarter Meeting', 'NY & PA', NULL, 'org-2026-12-12-ny-pa', 'orgNY', FALSE, FALSE, FALSE),
 -- VSA-PA events (event_type = 'vsaPA')
 (28, '2026-05-30 00:00:00', 'VSA Precision Rifle Shoot', 'Tommy Gun Warehouse', 'Greeley PA', 'vsa-pa-precision-rifle-may-30', 'vsaPA', FALSE, FALSE, FALSE),
 (29, '2026-07-25 00:00:00', 'VSA Delaware River Kayaking', 'Dingmans Ferry PA', 'Dingmans Ferry Boat Launch', 'vsa-pa-kayaking-jul-25', 'vsaPA', FALSE, FALSE, FALSE),
