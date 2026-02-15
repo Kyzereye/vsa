@@ -11,12 +11,17 @@ const FOOTER_LINKS = [
 
 function Footer() {
   const location = useLocation();
-  const isShredVetsPage = location.pathname === "/shredvets";
+  const pathname = location.pathname;
+  const isShredVetsPage = pathname === "/shredvets";
+  const isVsaPA = pathname.startsWith("/vsa-pa");
 
   const handleAnchorClick = (e, href) => {
     e.preventDefault();
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
+
+  const eventsOnThisPage = pathname === "/" || pathname === "/vsa-pa" || isShredVetsPage;
+  const eventsLink = isVsaPA ? "/vsa-pa-events" : isShredVetsPage ? "/shredvets#events" : "/events";
 
   return (
     <footer className="footer">
@@ -31,9 +36,15 @@ function Footer() {
           ) : (
             <>
               {FOOTER_LINKS.map(({ href, label }) => (
-                <a key={href} href={href} onClick={(e) => handleAnchorClick(e, href)}>
-                  {label}
-                </a>
+                href === "#events" && eventsOnThisPage ? (
+                  <a key={href} href="#events" onClick={(e) => handleAnchorClick(e, "#events")}>Events</a>
+                ) : href === "#events" ? (
+                  <Link key={href} to={eventsLink}>Events</Link>
+                ) : (
+                  <a key={href} href={href} onClick={(e) => handleAnchorClick(e, href)}>
+                    {label}
+                  </a>
+                )
               ))}
               <Link to="/shredvets">ShredVets</Link>
             </>

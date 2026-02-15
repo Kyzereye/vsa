@@ -29,7 +29,7 @@ function Nav() {
   const { user, logout, isAuthenticated, isAdmin, loading: authLoading } = useAuth();
   const pathname = location.pathname;
   const isHome = pathname === "/";
-  const isVsaPA = pathname === "/vsa-pa" || pathname === "/vsa-pa-training" || pathname === "/vsa-pa-meetings";
+  const isVsaPA = pathname === "/vsa-pa" || pathname === "/vsa-pa-events" || pathname === "/vsa-pa-training" || pathname === "/vsa-pa-meetings";
   const isShredvets = pathname === "/shredvets";
   const basePath = isVsaPA ? "/vsa-pa" : isShredvets ? "/shredvets" : "/";
   const isOnSectionedPage = isHome || pathname === "/vsa-pa" || isShredvets;
@@ -222,6 +222,23 @@ function Nav() {
           </li>
           {MAIN_NAV_LINKS.filter((l) => l.href !== "#home").map(({ href, label }) => {
             const hash = href.slice(1);
+            // Events: anchor when events are on this page (Home, VsaPA, ShredVets); else link to dedicated page
+            const isEventsLink = href === "#events";
+            const eventsOnThisPage = (pathname === "/" || pathname === "/vsa-pa") && isCurrentPage || (isShredvets && isCurrentPage);
+            const eventsTo = isVsaPA ? "/vsa-pa-events" : isShredvets ? { pathname: "/shredvets", hash: "#events" } : "/events";
+            if (isEventsLink) {
+              return (
+                <li key={href}>
+                  {eventsOnThisPage ? (
+                    <a href={anchorHref(hash)} onClick={(e) => { e.preventDefault(); handleAnchorClick(e, href); }}>
+                      {label}
+                    </a>
+                  ) : (
+                    <Link to={eventsTo} onClick={closeAll}>{label}</Link>
+                  )}
+                </li>
+              );
+            }
             return (
               <li key={href}>
                 {isOnSectionedPage && isCurrentPage ? (

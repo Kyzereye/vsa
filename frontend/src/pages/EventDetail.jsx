@@ -75,8 +75,8 @@ function EventDetail() {
     isTrainingPAEvent ? "/vsa-pa-training" :
     isOrgPAEvent ? "/vsa-pa-meetings" :
     isShredVetsEvent ? "/shredvets#events" :
-    isVsaPAEvent ? "/vsa-pa#events" :
-    "/#events";
+    isVsaPAEvent ? "/vsa-pa-events" :
+    "/events";
   const backLinkText =
     isTrainingNYEvent ? "Back to Training" :
     isTrainingPAEvent ? "Back to VSA-PA Training" :

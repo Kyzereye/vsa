@@ -16,12 +16,12 @@ function PastEvents({ eventType = "vsa" }) {
     "Past VSA Events";
   const backLink =
     eventType === "shredvets" ? "/shredvets" :
-    eventType === "vsaPA" ? "/vsa-pa" :
-    "/";
+    eventType === "vsaPA" ? "/vsa-pa-events" :
+    "/events";
   const backLinkText =
     eventType === "shredvets" ? "Back to ShredVets" :
-    eventType === "vsaPA" ? "Back to VSA-PA" :
-    "Back to VSA Home";
+    eventType === "vsaPA" ? "Back to VSA-PA Events" :
+    "Back to VSA Events";
 
   useEffect(() => {
     fetchEvents(eventType, { past: true })

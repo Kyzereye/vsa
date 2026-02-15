@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Nav from "../components/Nav";
-import Footer from "../components/Footer";
-import { fetchEvents } from "../api";
+import Nav from "../../components/Nav";
+import Footer from "../../components/Footer";
+import { fetchEvents } from "../../api";
 
 function formatMeetingDate(dateStr) {
   if (!dateStr) return "";
@@ -16,17 +16,21 @@ function formatMeetingDate(dateStr) {
   });
 }
 
-function VsaPAMeetings() {
+/**
+ * Shared meetings page used by both NY (/meetings) and PA (/vsa-pa-meetings).
+ * Meeting cards link to event detail for consistency with training and other event lists.
+ */
+function MeetingsPage({ eventType, title, subtitle, backTo, backLabel }) {
   const [meetings, setMeetings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchEvents("orgPA")
+    fetchEvents(eventType)
       .then(setMeetings)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [eventType]);
 
   return (
     <>
@@ -34,11 +38,11 @@ function VsaPAMeetings() {
       <main>
         <section className="hero" id="home">
           <div className="hero-content">
-            <h1>VSA-PA Organizational Meetings</h1>
-            <p style={{ opacity: 0.95 }}>VSA Pennsylvania chapter board and general member meetings</p>
+            <h1>{title}</h1>
+            <p style={{ opacity: 0.95 }}>{subtitle}</p>
             <p style={{ marginTop: "1rem" }}>
-              <Link to="/vsa-pa" className="cta-button" style={{ background: "var(--dark-gray)" }}>
-                Back to VSA-PA
+              <Link to={backTo} className="cta-button" style={{ background: "var(--dark-gray)" }}>
+                {backLabel}
               </Link>
             </p>
           </div>
@@ -54,10 +58,10 @@ function VsaPAMeetings() {
               <p style={{ textAlign: "center", color: "var(--text-gray)" }}>No meetings scheduled.</p>
             ) : (
               <div className="meetings-list">
-                {meetings.map(({ id, date, title, location, slug }) => (
+                {meetings.map(({ id, date, title: meetingTitle, location, slug }) => (
                   <Link key={id} to={`/events/${slug || id}`} className="meeting-card" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
                     <div className="meeting-date">{formatMeetingDate(date)}</div>
-                    <div className="meeting-title">{title}</div>
+                    <div className="meeting-title">{meetingTitle}</div>
                     <div className="meeting-location">
                       <span className="meeting-location-badge">{location}</span>
                     </div>
@@ -73,4 +77,4 @@ function VsaPAMeetings() {
   );
 }
 
-export default VsaPAMeetings;
+export default MeetingsPage;
