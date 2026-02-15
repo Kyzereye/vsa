@@ -50,18 +50,20 @@ function Admin() {
       setLoading(true);
       setError(null);
       try {
-        const [u, e, p, n, reg] = await Promise.all([
+        const [u, e, p, n, reg, gal] = await Promise.all([
           token ? fetchUsers(token).catch(() => []) : Promise.resolve([]),
           fetchEvents().catch(() => []),
           fetchPrograms().catch(() => []),
           fetchNews().catch(() => []),
           token ? fetchRegistrations(token).catch(() => []) : Promise.resolve([]),
+          fetchGallery().catch(() => []),
         ]);
         setUsers(u);
         setEvents(e.map((ev) => ({ ...ev, status: ev.eventType || "vsaNY" })));
         setPrograms(p);
         setNews(n);
         setRegistrations(reg);
+        setGallery(gal);
       } catch (err) {
         setError(err.message);
       } finally {
