@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import Nav from "../components/Nav";
-import Footer from "../components/Footer";
-import { fetchEvents } from "../api";
-import { formatEventDateDisplay } from "../utils/date";
+import Nav from "../../components/Nav";
+import Footer from "../../components/Footer";
+import { fetchEvents } from "../../api";
+import { formatEventDateDisplay } from "../../utils/date";
 
 function formatPastTrainingDate(dateStr) {
   if (!dateStr) return "";
@@ -12,7 +12,16 @@ function formatPastTrainingDate(dateStr) {
   return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
 }
 
-function Training() {
+/**
+ * Shared training page used by both NY (/training) and PA (/vsa-pa-training).
+ * @param {Object} props
+ * @param {'trainingNY'|'trainingPA'} props.eventType - API event type filter
+ * @param {string} props.title - Hero heading
+ * @param {string} props.subtitle - Hero subtitle
+ * @param {string} props.backTo - Path for "Back" link
+ * @param {string} props.backLabel - Text for "Back" link
+ */
+function TrainingPage({ eventType, title, subtitle, backTo, backLabel }) {
   const [upcoming, setUpcoming] = useState([]);
   const [past, setPast] = useState([]);
   const [loadingUpcoming, setLoadingUpcoming] = useState(true);
@@ -21,18 +30,18 @@ function Training() {
   const [errorPast, setErrorPast] = useState(null);
 
   useEffect(() => {
-    fetchEvents("trainingNY")
+    fetchEvents(eventType)
       .then(setUpcoming)
       .catch((err) => setErrorUpcoming(err.message))
       .finally(() => setLoadingUpcoming(false));
-  }, []);
+  }, [eventType]);
 
   useEffect(() => {
-    fetchEvents("trainingNY", { past: true })
+    fetchEvents(eventType, { past: true })
       .then(setPast)
       .catch((err) => setErrorPast(err.message))
       .finally(() => setLoadingPast(false));
-  }, []);
+  }, [eventType]);
 
   return (
     <>
@@ -40,11 +49,11 @@ function Training() {
       <main>
         <section className="hero hero-auth" id="home">
           <div className="hero-content">
-            <h1>Training</h1>
-            <p style={{ opacity: 0.95 }}>Firearms and safety courses from the VSA</p>
+            <h1>{title}</h1>
+            <p style={{ opacity: 0.95 }}>{subtitle}</p>
             <p style={{ marginTop: "1rem" }}>
-              <Link to="/" className="cta-button" style={{ background: "var(--dark-gray)" }}>
-                Back to VSA Home
+              <Link to={backTo} className="cta-button" style={{ background: "var(--dark-gray)" }}>
+                {backLabel}
               </Link>
             </p>
           </div>
@@ -61,14 +70,14 @@ function Training() {
               <p style={{ textAlign: "center", color: "var(--text-gray)" }}>No upcoming training at the moment. Check back soon.</p>
             ) : (
               <div className="events-list events-list-grid">
-                {upcoming.map(({ id, date, title, location, address, slug, canceled, dateChanged, locationChanged }) => (
+                {upcoming.map(({ id, date, title: eventTitle, location, address, slug, canceled, dateChanged, locationChanged }) => (
                   <Link key={id} to={`/events/${slug || id}`} className="event-card event-card-link">
                     <div className="event-date">
                       {formatEventDateDisplay(date)}
                       {dateChanged && <span className="event-status-badge event-status-changed">Date Changed</span>}
                     </div>
                     <div className="event-title">
-                      {title}
+                      {eventTitle}
                       {canceled && <span className="event-status-badge event-status-canceled">Canceled</span>}
                     </div>
                     <div className="event-location">
@@ -94,9 +103,9 @@ function Training() {
               <p style={{ textAlign: "center", color: "var(--text-gray)" }}>No past training on record.</p>
             ) : (
               <ul className="training-past-list">
-                {past.map(({ id, date, title, canceled }) => (
+                {past.map(({ id, date, title: eventTitle, canceled }) => (
                   <li key={id} className="training-past-item">
-                    <span className="training-past-title">{title}</span>
+                    <span className="training-past-title">{eventTitle}</span>
                     {canceled && <span className="event-status-badge event-status-canceled" style={{ marginLeft: "0.5rem" }}>Canceled</span>}
                     <span className="training-past-date"> — {formatPastTrainingDate(date)}</span>
                   </li>
@@ -111,4 +120,4 @@ function Training() {
   );
 }
 
-export default Training;
+export default TrainingPage;
