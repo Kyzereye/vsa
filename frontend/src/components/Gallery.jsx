@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { fetchGallery, galleryImageUrl } from "../api";
 
-function Gallery() {
+function Gallery({ limit }) {
   const [lightboxSrc, setLightboxSrc] = useState(null);
   const [images, setImages] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -14,9 +15,12 @@ function Gallery() {
       .finally(() => setLoading(false));
   }, []);
 
+  const displayImages = limit ? images.slice(0, limit) : images;
+  const hasMore = limit != null && images.length > limit;
+
   return (
     <>
-      <section>
+      <section id="gallery">
         <div className="container">
           <h2 className="section-title">Photo Gallery</h2>
           {error && <p className="error-message">{error}</p>}
@@ -24,7 +28,7 @@ function Gallery() {
             <p style={{ color: "var(--text-gray)" }}>Loading gallery…</p>
           ) : (
             <div className="gallery">
-              {images.map((img) => {
+              {displayImages.map((img) => {
                 const src = galleryImageUrl(img.url);
                 return (
                   <img
@@ -37,6 +41,13 @@ function Gallery() {
                 );
               })}
             </div>
+          )}
+          {!loading && hasMore && (
+            <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
+              <Link to="/gallery" className="cta-button" style={{ background: "var(--dark-gray)" }}>
+                View full gallery
+              </Link>
+            </p>
           )}
         </div>
       </section>

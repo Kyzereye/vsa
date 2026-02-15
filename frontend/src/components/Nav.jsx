@@ -239,6 +239,17 @@ function Nav() {
                 </li>
               );
             }
+            // About, Programs, News: dedicated pages when not on home; anchor when on home
+            const sectionPageRoutes = { "#about": "/about", "#programs": "/programs", "#news": "/news" };
+            const sectionPage = sectionPageRoutes[href];
+            const onHome = pathname === "/" && isCurrentPage;
+            if (sectionPage && !onHome) {
+              return (
+                <li key={href}>
+                  <Link to={sectionPage} onClick={closeAll}>{label}</Link>
+                </li>
+              );
+            }
             return (
               <li key={href}>
                 {isOnSectionedPage && isCurrentPage ? (
@@ -275,6 +286,11 @@ function Nav() {
           <li>
             <Link to={isVsaPA ? "/vsa-pa-meetings" : "/meetings"} onClick={closeAll}>
               Organizational Meetings
+            </Link>
+          </li>
+          <li>
+            <Link to="/gallery" onClick={closeAll}>
+              Gallery
             </Link>
           </li>
           <li>

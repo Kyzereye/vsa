@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { Home, ShredVets, VsaPA, VsaPATraining, VsaPAMeetings, EventDetail, Events, VsaPAEvents, PastEvents, Admin, Login, Register, Profile, VerifyEmail, ForgotPassword, ResetPassword, Meetings, Membership, Training } from "./pages";
+import { Home, AboutPage, ProgramsPage, NewsPage, GalleryPage, ShredVets, VsaPA, VsaPATraining, VsaPAMeetings, EventDetail, Events, VsaPAEvents, PastEvents, Admin, Login, Register, Profile, VerifyEmail, ForgotPassword, ResetPassword, Meetings, Membership, Training } from "./pages";
 import { ScrollToTop, ProtectedRoute } from "./components";
 import "./App.css";
 
@@ -9,6 +9,10 @@ function App() {
       <ScrollToTop />
       <Routes>
         <Route path="/" element={<Home />} />
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/programs" element={<ProgramsPage />} />
+        <Route path="/news" element={<NewsPage />} />
+        <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/shredvets" element={<ShredVets />} />
         <Route path="/vsa-pa" element={<VsaPA />} />
         <Route path="/vsa-pa-events" element={<VsaPAEvents />} />

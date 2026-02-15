@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { fetchNews } from "../api";
 
-function News() {
+function News({ limit }) {
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,6 +13,9 @@ function News() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const displayNews = limit ? news.slice(0, limit) : news;
+  const hasMore = limit != null && news.length > limit;
 
   if (loading) {
     return (
@@ -40,13 +44,20 @@ function News() {
       <div className="container">
         <h2 className="section-title">Latest News</h2>
         <div className="card-grid">
-          {news.map(({ id, title, description }) => (
+          {displayNews.map(({ id, title, description }) => (
             <div key={id} className="card">
               <h3>{title}</h3>
               <p>{description}</p>
             </div>
           ))}
         </div>
+        {hasMore && (
+          <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
+            <Link to="/news" className="cta-button" style={{ background: "var(--dark-gray)" }}>
+              View all news
+            </Link>
+          </p>
+        )}
       </div>
     </section>
   );

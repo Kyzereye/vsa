@@ -34,10 +34,10 @@ function Home() {
       <main>
         <Hero />
         <Events pastEventsLink="/past-events" pastEventsLabel="View past VSA events" />
-        <About />
-        <Programs />
-        <News />
-        <Gallery />
+        <About teaser />
+        <Programs limit={2} />
+        <News limit={2} />
+        <Gallery limit={6} />
         <Contact />
       </main>
       <Footer />

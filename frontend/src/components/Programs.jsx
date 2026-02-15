@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fetchPrograms } from "../api";
 
-function Programs() {
+function Programs({ limit }) {
   const [programs, setPrograms] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,6 +13,9 @@ function Programs() {
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
   }, []);
+
+  const displayPrograms = limit ? programs.slice(0, limit) : programs;
+  const hasMore = limit != null && programs.length > limit;
 
   if (loading) {
     return (
@@ -41,7 +44,7 @@ function Programs() {
       <div className="container">
         <h2 className="section-title">Our Programs</h2>
         <div className="card-grid">
-          {programs.map(({ id, title, description, link, url }) => {
+          {displayPrograms.map(({ id, title, description, link, url }) => {
             const CardContent = (
               <>
                 <h3>{title}</h3>
@@ -78,6 +81,13 @@ function Programs() {
             );
           })}
         </div>
+        {hasMore && (
+          <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
+            <Link to="/programs" className="cta-button" style={{ background: "var(--dark-gray)" }}>
+              View all programs
+            </Link>
+          </p>
+        )}
       </div>
     </section>
   );

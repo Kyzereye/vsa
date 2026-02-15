@@ -20,8 +20,10 @@ function Footer() {
     document.querySelector(href)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  const eventsOnThisPage = pathname === "/" || pathname === "/vsa-pa" || isShredVetsPage;
+  const onHome = pathname === "/";
+  const eventsOnThisPage = onHome || pathname === "/vsa-pa" || isShredVetsPage;
   const eventsLink = isVsaPA ? "/vsa-pa-events" : isShredVetsPage ? "/shredvets#events" : "/events";
+  const sectionPageRoutes = { "#about": "/about", "#programs": "/programs", "#news": "/news", "#gallery": "/gallery" };
 
   return (
     <footer className="footer">
@@ -35,17 +37,23 @@ function Footer() {
             </>
           ) : (
             <>
-              {FOOTER_LINKS.map(({ href, label }) => (
-                href === "#events" && eventsOnThisPage ? (
-                  <a key={href} href="#events" onClick={(e) => handleAnchorClick(e, "#events")}>Events</a>
-                ) : href === "#events" ? (
-                  <Link key={href} to={eventsLink}>Events</Link>
-                ) : (
+              {FOOTER_LINKS.map(({ href, label }) => {
+                if (href === "#events") {
+                  return eventsOnThisPage ? (
+                    <a key={href} href="#events" onClick={(e) => handleAnchorClick(e, "#events")}>Events</a>
+                  ) : (
+                    <Link key={href} to={eventsLink}>Events</Link>
+                  );
+                }
+                if (sectionPageRoutes[href] && !onHome) {
+                  return <Link key={href} to={sectionPageRoutes[href]}>{label}</Link>;
+                }
+                return (
                   <a key={href} href={href} onClick={(e) => handleAnchorClick(e, href)}>
                     {label}
                   </a>
-                )
-              ))}
+                );
+              })}
               <Link to="/shredvets">ShredVets</Link>
             </>
           )}
