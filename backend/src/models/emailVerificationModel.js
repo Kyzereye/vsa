@@ -60,13 +60,3 @@ export const deleteVerificationToken = async (token) => {
     connection.release();
   }
 };
-
-// Clean up expired tokens (can be run periodically)
-export const cleanupExpiredTokens = async () => {
-  const connection = await pool.getConnection();
-  try {
-    await connection.execute("DELETE FROM email_verifications WHERE expires_at < NOW()");
-  } finally {
-    connection.release();
-  }
-};
