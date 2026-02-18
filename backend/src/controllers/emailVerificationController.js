@@ -62,9 +62,8 @@ export const resendVerificationEmail = async (req, res) => {
 
     connection = await pool.getConnection();
 
-    // Get user info
     const [users] = await connection.execute(
-      "SELECT id, name, email, email_verified FROM users WHERE id = ?",
+      "SELECT u.id, u.email, u.email_verified, d.name FROM users u LEFT JOIN user_details d ON d.user_id = u.id WHERE u.id = ?",
       [userId]
     );
 

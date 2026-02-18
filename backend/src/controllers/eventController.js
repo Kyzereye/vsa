@@ -53,6 +53,8 @@ function formatEvent(row) {
     canceled: Boolean(row.canceled),
     dateChanged: Boolean(row.date_changed),
     locationChanged: Boolean(row.location_changed),
+    instructorId: row.instructor_id ?? null,
+    instructorName: row.instructor_name ?? null,
   };
 }
 
@@ -62,8 +64,8 @@ export const getEvents = async (req, res) => {
     const { event_type: eventType, time } = req.query;
     connection = await pool.getConnection();
 
-    const eventCols = "id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed";
-    let sql = `SELECT ${eventCols} FROM events`;
+    const eventCols = "events.id, events.date, events.title, events.location, events.address, events.slug, events.event_type, events.canceled, events.date_changed, events.location_changed, events.instructor_id, team_profiles.name AS instructor_name";
+    let sql = `SELECT ${eventCols} FROM events LEFT JOIN team_profiles ON events.instructor_id = team_profiles.id`;
     const params = [];
     const conditions = [];
 
@@ -115,7 +117,7 @@ export const getEventById = async (req, res) => {
     connection = await pool.getConnection();
 
     const [rows] = await connection.execute(
-      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed FROM events WHERE id = ?",
+      "SELECT events.id, events.date, events.title, events.location, events.address, events.slug, events.event_type, events.canceled, events.date_changed, events.location_changed, events.instructor_id, team_profiles.name AS instructor_name FROM events LEFT JOIN team_profiles ON events.instructor_id = team_profiles.id WHERE events.id = ?",
       [id]
     );
     connection.release();
@@ -139,7 +141,7 @@ export const getEventBySlug = async (req, res) => {
     connection = await pool.getConnection();
 
     const [eventRows] = await connection.execute(
-      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed FROM events WHERE slug = ?",
+      "SELECT events.id, events.date, events.title, events.location, events.address, events.slug, events.event_type, events.canceled, events.date_changed, events.location_changed, events.instructor_id, team_profiles.name AS instructor_name FROM events LEFT JOIN team_profiles ON events.instructor_id = team_profiles.id WHERE events.slug = ?",
       [slug]
     );
 
@@ -177,20 +179,21 @@ export const getEventBySlug = async (req, res) => {
 export const createEvent = async (req, res) => {
   let connection;
   try {
-    const { date, title, location, address, slug, eventType, canceled, dateChanged, locationChanged } = req.body;
+    const { date, title, location, address, slug, eventType, canceled, dateChanged, locationChanged, instructorId } = req.body;
 
     if (!date || !title || !location) {
       return res.status(400).json({ message: "Date, title, and location are required" });
     }
 
-    const allowed = ["vsaNY", "vsaPA", "shredvets", "org", "training"];
+    const allowed = ["vsaNY", "vsaPA", "shredvets", "trainingNY", "trainingPA", "orgNY", "orgPA"];
     const event_type = allowed.includes(eventType) ? eventType : "vsaNY";
     const dateVal = String(date).trim().match(/^\d{4}-\d{2}-\d{2}/) ? `${date.replace(/T.*$/, "")} 00:00:00` : date;
+    const instructor_id = instructorId != null && instructorId !== "" ? parseInt(instructorId, 10) : null;
 
     connection = await pool.getConnection();
     const [result] = await connection.execute(
-      `INSERT INTO events (date, title, location, address, slug, event_type, canceled, date_changed, location_changed)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO events (date, title, location, address, slug, event_type, canceled, date_changed, location_changed, instructor_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         dateVal,
         title,
@@ -201,6 +204,7 @@ export const createEvent = async (req, res) => {
         canceled ? 1 : 0,
         dateChanged ? 1 : 0,
         locationChanged ? 1 : 0,
+        instructor_id,
       ]
     );
     const insertId = result.insertId;
@@ -209,7 +213,7 @@ export const createEvent = async (req, res) => {
       await connection.execute("UPDATE events SET slug = ? WHERE id = ?", [finalSlug, insertId]);
     }
     const [rows] = await connection.execute(
-      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed FROM events WHERE id = ?",
+      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed, instructor_id FROM events WHERE id = ?",
       [insertId]
     );
     connection.release();
@@ -226,7 +230,7 @@ export const updateEvent = async (req, res) => {
   let connection;
   try {
     const { id } = req.params;
-    const { date, title, location, address, slug, eventType, canceled, dateChanged, locationChanged, originalDate, originalLocation, originalAddress } = req.body;
+    const { date, title, location, address, slug, eventType, canceled, dateChanged, locationChanged, instructorId } = req.body;
 
     connection = await pool.getConnection();
     const [existing] = await connection.execute("SELECT id FROM events WHERE id = ?", [id]);
@@ -285,7 +289,7 @@ export const updateEvent = async (req, res) => {
     await connection.execute(`UPDATE events SET ${updates.join(", ")} WHERE id = ?`, values);
 
     const [rows] = await connection.execute(
-      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed FROM events WHERE id = ?",
+      "SELECT id, date, title, location, address, slug, event_type, canceled, date_changed, location_changed, instructor_id FROM events WHERE id = ?",
       [id]
     );
     connection.release();

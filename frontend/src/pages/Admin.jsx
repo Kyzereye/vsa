@@ -7,7 +7,7 @@ import AdminEvents from "../components/AdminEvents";
 import AdminPrograms from "../components/AdminPrograms";
 import AdminNews from "../components/AdminNews";
 import AdminRegistrations from "../components/AdminRegistrations";
-import AdminGallery from "../components/AdminGallery";
+import AdminMedia from "../components/AdminMedia";
 import { useAuth } from "../contexts/AuthContext";
 import {
   fetchUsers,
@@ -15,9 +15,9 @@ import {
   fetchPrograms,
   fetchNews,
   fetchRegistrations,
-  fetchGallery,
-  uploadGalleryImage,
-  deleteGalleryImage,
+  fetchMedia,
+  uploadMedia,
+  deleteMedia,
   updateUser,
   deleteUser,
   createEvent,
@@ -39,31 +39,31 @@ function Admin() {
   const [programs, setPrograms] = useState([]);
   const [news, setNews] = useState([]);
   const [registrations, setRegistrations] = useState([]);
-  const [gallery, setGallery] = useState([]);
+  const [media, setMedia] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", role: "member", status: "active" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", role: "member", status: "active", instructorNumber: "" });
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const [u, e, p, n, reg, gal] = await Promise.all([
+        const [u, e, p, n, reg, med] = await Promise.all([
           token ? fetchUsers(token).catch(() => []) : Promise.resolve([]),
           fetchEvents().catch(() => []),
           fetchPrograms().catch(() => []),
           fetchNews().catch(() => []),
           token ? fetchRegistrations(token).catch(() => []) : Promise.resolve([]),
-          fetchGallery().catch(() => []),
+          fetchMedia().catch(() => []),
         ]);
         setUsers(u);
         setEvents(e.map((ev) => ({ ...ev, status: ev.eventType || "vsaNY" })));
         setPrograms(p);
         setNews(n);
         setRegistrations(reg);
-        setGallery(gal);
+        setMedia(med);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -86,13 +86,13 @@ function Admin() {
 
   const handleCancel = () => {
     setEditingUser(null);
-    setFormData({ name: "", email: "", phone: "", role: "member", status: "active" });
+    setFormData({ name: "", email: "", phone: "", role: "member", status: "active", instructorNumber: "" });
   };
 
   const handleSave = async (userId) => {
     if (!token) return;
     try {
-      const data = { name: formData.name, email: formData.email, phone: formData.phone, role: formData.role, status: formData.status };
+      const data = { name: formData.name, email: formData.email, phone: formData.phone, role: formData.role, status: formData.status, instructorNumber: formData.instructorNumber || null };
       await updateUser(userId, data, token);
       setUsers(users.map((user) => (user.id === userId ? { ...user, ...formData } : user)));
       handleCancel();
@@ -113,6 +113,11 @@ function Admin() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    if (name === "instructorNumber") {
+      const alphanumeric = String(value).replace(/[^A-Za-z0-9]/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, [name]: alphanumeric }));
+      return;
+    }
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -151,6 +156,7 @@ function Admin() {
         canceled: data.canceled,
         dateChanged: data.dateChanged,
         locationChanged: data.locationChanged,
+        instructorId: data.instructorId != null && data.instructorId !== "" ? data.instructorId : null,
       };
       const res = await createEvent(payload, token);
       const newEvent = { ...res.event, status: res.event.eventType || "vsa", eventType: res.event.eventType };
@@ -293,10 +299,10 @@ function Admin() {
               </button>
               <button
                 type="button"
-                className={`admin-tab ${activeTab === "gallery" ? "active" : ""}`}
-                onClick={() => setActiveTab("gallery")}
+                className={`admin-tab ${activeTab === "media" ? "active" : ""}`}
+                onClick={() => setActiveTab("media")}
               >
-                Gallery
+                Media
               </button>
             </div>
 
@@ -311,6 +317,7 @@ function Admin() {
                     <th>Email</th>
                     <th>Phone</th>
                     <th>Role</th>
+                    <th>Instructor #</th>
                     <th>Status</th>
                     <th>Join Date</th>
                     <th>Actions</th>
@@ -357,7 +364,25 @@ function Admin() {
                             >
                               <option value="member">Member</option>
                               <option value="admin">Admin</option>
+                              <option value="boardmember">Board Member</option>
+                              <option value="instructor">Instructor</option>
                             </select>
+                          </td>
+                          <td>
+                            {formData.role === "instructor" ? (
+                              <input
+                                type="text"
+                                name="instructorNumber"
+                                value={formData.instructorNumber}
+                                onChange={handleChange}
+                                className="admin-input"
+                                placeholder="9–10 alphanumeric"
+                                maxLength={10}
+                                style={{ width: "8rem" }}
+                              />
+                            ) : (
+                              "—"
+                            )}
                           </td>
                           <td>
                             <select
@@ -398,6 +423,7 @@ function Admin() {
                           <td>
                             <span className={`admin-badge admin-badge-${user.role}`}>{user.role}</span>
                           </td>
+                          <td>{user.role === "instructor" ? (user.instructorNumber || "—") : "—"}</td>
                           <td>
                             <span className={`admin-badge admin-badge-${user.status}`}>{user.status}</span>
                           </td>
@@ -467,24 +493,24 @@ function Admin() {
               </>
             )}
 
-            {activeTab === "gallery" && (
+            {activeTab === "media" && (
               <>
-                <h2 className="section-title">Photo Gallery</h2>
+                <h2 className="section-title">Media Library</h2>
                 <p style={{ color: "var(--text-gray)", marginBottom: "1rem" }}>
-                  Add images to the gallery. Images are stored in <code>uploads/gallery</code>. You can assign an event to each image.
+                  Upload images (gallery, event, page, team) or documents (PDF). Files are stored in <code>uploads/</code> by type.
                 </p>
-                <AdminGallery
-                  gallery={gallery}
+                <AdminMedia
+                  media={media}
                   events={events}
-                  onUpload={async (formData) => {
+                  onUpload={async (formData, type) => {
                     if (!token) return;
-                    const { image } = await uploadGalleryImage(formData, token);
-                    setGallery((prev) => [...prev, image]);
+                    const { media: newItem } = await uploadMedia(formData, type, token);
+                    setMedia((prev) => [...prev, newItem]);
                   }}
                   onDelete={async (id) => {
                     if (!token) return;
-                    await deleteGalleryImage(id, token);
-                    setGallery((prev) => prev.filter((img) => img.id !== id));
+                    await deleteMedia(id, token);
+                    setMedia((prev) => prev.filter((m) => m.id !== id));
                   }}
                 />
               </>

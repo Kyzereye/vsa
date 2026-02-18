@@ -46,47 +46,30 @@ export const register = async (req, res) => {
       return res.status(400).json({ message: "User with this email already exists" });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create user (phone stored as 10 digits only)
     const phoneDigits = normalizePhoneToDigits(phone);
+
     const [result] = await connection.execute(
-      `INSERT INTO users (name, email, phone, password_hash, role, status, join_date, email_opt_in, email_verified) 
-       VALUES (?, ?, ?, ?, 'member', 'active', CURDATE(), 0, 0)`,
-      [name.trim(), email.trim(), phoneDigits, hashedPassword]
+      "INSERT INTO users (email, password_hash, status, email_verified) VALUES (?, ?, 'active', 0)",
+      [email.trim(), hashedPassword]
+    );
+    await connection.execute(
+      "INSERT INTO user_details (user_id, name, phone, role, join_date, email_opt_in) VALUES (?, ?, ?, 'member', CURDATE(), 0)",
+      [result.insertId, name.trim(), phoneDigits]
     );
 
     // Generate verification token
     const verificationToken = generateVerificationToken();
     await storeVerificationToken(result.insertId, email.trim(), verificationToken, false);
 
-    // Get the created user
-    const [newUsers] = await connection.execute(
-      "SELECT id, name, email, phone, role, status, join_date, email_opt_in, email_verified FROM users WHERE id = ?",
-      [result.insertId]
-    );
-
     connection.release();
 
-    const newUser = {
-      ...newUsers[0],
-      joinDate: newUsers[0].join_date,
-      emailOptIn: Boolean(newUsers[0].email_opt_in),
-      emailVerified: Boolean(newUsers[0].email_verified),
-    };
-
-    // Send verification email (don't wait for it to complete)
     sendVerificationEmail(email.trim(), name.trim(), verificationToken).catch((err) => {
       console.error("Failed to send verification email:", err);
-      // Don't fail registration if email fails
     });
 
-    // Don't generate token or log in - user must verify email first
-    // Return user (without password) but NO token
     res.status(201).json({
       message: "User registered successfully. Please check your email to verify your account.",
-      user: newUser,
       requiresVerification: true,
     });
   } catch (error) {
@@ -108,12 +91,10 @@ export const login = async (req, res) => {
 
     connection = await pool.getConnection();
 
-    // Find user
     const [users] = await connection.execute(
-      "SELECT id, name, email, phone, password_hash, role, status, join_date, email_opt_in, email_verified FROM users WHERE email = ?",
+      "SELECT u.id, u.email, u.password_hash, u.status, u.email_verified, d.name, d.phone, d.role, d.join_date, d.email_opt_in, d.instructor_number FROM users u LEFT JOIN user_details d ON d.user_id = u.id WHERE u.email = ?",
       [email.trim()]
     );
-
     connection.release();
 
     if (users.length === 0) {
@@ -122,32 +103,27 @@ export const login = async (req, res) => {
 
     const user = users[0];
 
-    // Check password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
     if (!isValidPassword) {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Check if user is active
     if (user.status !== "active") {
       return res.status(403).json({ message: "Account is inactive" });
     }
 
-    // Check if email is verified
     if (!user.email_verified) {
-      return res.status(403).json({ 
-        message: "Please verify your email before logging in. Check your inbox for a verification link." 
+      return res.status(403).json({
+        message: "Please verify your email before logging in. Check your inbox for a verification link.",
       });
     }
 
-    // Generate token
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
     );
 
-    // Return user (without password) and token
     const userWithoutPassword = {
       id: user.id,
       name: user.name,
@@ -158,6 +134,7 @@ export const login = async (req, res) => {
       joinDate: user.join_date,
       emailOptIn: Boolean(user.email_opt_in),
       emailVerified: Boolean(user.email_verified),
+      instructorNumber: user.instructor_number ?? null,
     };
 
     res.json({
@@ -181,12 +158,11 @@ export const requestPasswordReset = async (req, res) => {
 
     const connection = await pool.getConnection();
     const [users] = await connection.execute(
-      "SELECT id, name, email FROM users WHERE email = ? AND status = 'active'",
+      "SELECT u.id, u.email, d.name FROM users u LEFT JOIN user_details d ON d.user_id = u.id WHERE u.email = ? AND u.status = 'active'",
       [email.trim()]
     );
     connection.release();
 
-    // Always return success to avoid leaking whether the email exists
     if (users.length === 0) {
       return res.json({
         message: "If an account exists with that email, you will receive a password reset link shortly.",

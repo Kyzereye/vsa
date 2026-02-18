@@ -347,6 +347,12 @@ section {
   color: var(--text-gray);
 }
 
+.event-instructor {
+  font-size: 0.85rem;
+  margin-top: 0.35rem;
+  color: var(--text-gray);
+}
+
 .event-card-link {
   display: block;
   text-decoration: none;
@@ -398,6 +404,70 @@ section {
 
 .training-past-date {
   color: var(--text-gray);
+}
+
+/* Meet the Instructors page */
+.instructor-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 1rem;
+  max-width: 720px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.instructor-card {
+  background: var(--light-gray);
+  border-radius: 8px;
+  overflow: hidden;
+  padding: 1.25rem;
+}
+
+.instructor-card-image {
+  margin-bottom: 1rem;
+}
+
+.instructor-card-image img {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  border-radius: 4px;
+}
+
+.instructor-card-name {
+  margin: 0 0 0.5rem;
+  font-size: 1.15rem;
+  color: var(--primary-blue);
+}
+
+.instructor-card-bio {
+  white-space: pre-line;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--dark-gray);
+}
+
+.instructor-card-bio-preview {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.instructor-card-toggle {
+  margin-top: 0.5rem;
+  padding: 0;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  color: var(--primary-blue);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.instructor-card-toggle:hover {
+  color: var(--primary-red);
 }
 
 /* Organizational meetings list */
@@ -466,6 +536,83 @@ section {
   transform: scale(1.05);
 }
 
+/* Media Library page */
+.media-library-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin: 1rem 0 1.25rem;
+}
+
+.media-library-tab {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--light-gray);
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--dark-gray);
+}
+
+.media-library-tab:hover {
+  background: var(--light-gray);
+}
+
+.media-library-tab.active {
+  background: var(--primary-blue);
+  border-color: var(--primary-blue);
+  color: white;
+}
+
+.media-library-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.media-library-item {
+  margin: 0;
+}
+
+.media-library-item img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: 8px;
+  display: block;
+}
+
+.media-library-item figcaption {
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  margin-top: 0.35rem;
+}
+
+.media-library-docs {
+  list-style: none;
+  padding: 0;
+  margin: 1.5rem 0 0;
+  max-width: 560px;
+}
+
+.media-library-docs li {
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--light-gray);
+}
+
+.media-library-docs a {
+  color: var(--primary-blue);
+  font-weight: 500;
+}
+
+.media-library-doc-caption {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text-gray);
+  margin-top: 0.2rem;
+}
+
 /* About */
 .about-content {
   max-width: 800px;
@@ -477,6 +624,64 @@ section {
   font-size: 0.9rem;
   margin-bottom: 0.75rem;
   line-height: 1.65;
+}
+
+/* About Us section: left-aligned, readable line length, clearer spacing */
+#about .about-content {
+  text-align: left;
+  max-width: 42rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#about .about-content p {
+  font-size: 1rem;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+  color: var(--dark-gray);
+}
+
+#about .about-content p:last-of-type {
+  margin-bottom: 0;
+}
+
+#about .section-title {
+  margin-bottom: 1.25rem;
+}
+
+/* Privacy section (About page) */
+.privacy-section {
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--light-gray);
+}
+
+.privacy-section .section-title {
+  margin-bottom: 1.5rem;
+}
+
+.privacy-subtitle {
+  font-size: 1.1rem;
+  color: var(--primary-blue);
+  margin: 1.5rem 0 0.75rem;
+}
+
+.privacy-section .about-content {
+  text-align: left;
+}
+
+.privacy-terms-list {
+  max-width: 800px;
+  margin: 0 auto 2rem;
+  padding-left: 1.5rem;
+  text-align: left;
+  font-size: 0.9rem;
+  line-height: 1.65;
+  color: var(--dark-gray);
+}
+
+.privacy-terms-list li {
+  margin-bottom: 0.75rem;
 }
 
 /* Contact */
@@ -730,6 +935,17 @@ section {
 }
 
 .registration-dialog-btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+}
+
+.confirm-dialog-btn-danger {
+  background: var(--primary-red);
+  color: white;
+  border: none;
+}
+
+.confirm-dialog-btn-danger:hover {
   transform: translateY(-1px);
   box-shadow: var(--shadow);
 }

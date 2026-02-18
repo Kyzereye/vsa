@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { fetchGallery, galleryImageUrl } from "../api";
+import { fetchMedia, mediaUrl } from "../api";
+import { isImage } from "../utils/media";
 
 function Gallery({ limit }) {
   const [lightboxSrc, setLightboxSrc] = useState(null);
@@ -9,7 +10,8 @@ function Gallery({ limit }) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetchGallery()
+    fetchMedia("gallery")
+      .then((data) => data.filter(isImage))
       .then(setImages)
       .catch((err) => setError(err.message))
       .finally(() => setLoading(false));
@@ -29,7 +31,7 @@ function Gallery({ limit }) {
           ) : (
             <div className="gallery">
               {displayImages.map((img) => {
-                const src = galleryImageUrl(img.url);
+                const src = mediaUrl(img.path);
                 return (
                   <img
                     key={img.id}
@@ -45,7 +47,7 @@ function Gallery({ limit }) {
           {!loading && hasMore && (
             <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
               <Link to="/gallery" className="cta-button" style={{ background: "var(--dark-gray)" }}>
-                View full gallery
+                View media library
               </Link>
             </p>
           )}

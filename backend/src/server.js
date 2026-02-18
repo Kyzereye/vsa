@@ -8,8 +8,9 @@ import programRoutes from "./routes/programs.js";
 import newsRoutes from "./routes/news.js";
 import emailVerificationRoutes from "./routes/emailVerification.js";
 import registrationRoutes from "./routes/registrations.js";
-import galleryRoutes from "./routes/gallery.js";
+import mediaRoutes from "./routes/media.js";
 import membershipRoutes from "./routes/membership.js";
+import teamProfileRoutes from "./routes/teamProfiles.js";
 import path from "path";
 import { fileURLToPath } from "url";
 
@@ -25,7 +26,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve uploaded gallery images (folder: uploads/gallery)
+// Serve uploaded media (uploads/gallery, uploads/events, uploads/team, uploads/pages, uploads/documents)
 app.use("/api/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // Routes
@@ -40,8 +41,9 @@ app.use("/api/programs", programRoutes);
 app.use("/api/news", newsRoutes);
 app.use("/api/email", emailVerificationRoutes);
 app.use("/api/registrations", registrationRoutes);
-app.use("/api/gallery", galleryRoutes);
+app.use("/api/media", mediaRoutes);
 app.use("/api/membership", membershipRoutes);
+app.use("/api/team-profiles", teamProfileRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

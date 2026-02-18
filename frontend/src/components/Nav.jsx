@@ -13,7 +13,7 @@ const MAIN_NAV_LINKS = [
 
 const OTHER_SITES = [
   { path: "/", label: "VSA - NY" },
-  { path: "/vsa-pa", label: "VSA-PA" },
+  { path: "/vsa-pa", label: "VSA - PA" },
   { path: "/shredvets", label: "ShredVets" },
   // Add more sites here as needed, e.g. { path: "/other", label: "Other Site" },
 ];
@@ -29,9 +29,10 @@ function Nav() {
   const { user, logout, isAuthenticated, isAdmin, loading: authLoading } = useAuth();
   const pathname = location.pathname;
   const isHome = pathname === "/";
-  const isVsaPA = pathname === "/vsa-pa" || pathname === "/vsa-pa-events" || pathname === "/vsa-pa-training" || pathname === "/vsa-pa-meetings";
+  const isVsaPA = pathname.startsWith("/vsa-pa");
   const isShredvets = pathname === "/shredvets";
   const basePath = isVsaPA ? "/vsa-pa" : isShredvets ? "/shredvets" : "/";
+  const logoTo = basePath;
   const isOnSectionedPage = isHome || pathname === "/vsa-pa" || isShredvets;
 
   useEffect(() => {
@@ -95,8 +96,8 @@ function Nav() {
       }}
     >
       <div className="nav-container">
-        <Link to="/" className="nav-logo" onClick={closeAll}>
-          VSA
+        <Link to={logoTo} className="nav-logo" onClick={closeAll}>
+          {isVsaPA ? "VSA - PA" : isShredvets ? "VSA" : "VSA - NY"}
         </Link>
 
         <div className="nav-right">
@@ -290,7 +291,7 @@ function Nav() {
           </li>
           <li>
             <Link to="/gallery" onClick={closeAll}>
-              Gallery
+              Media
             </Link>
           </li>
           <li>

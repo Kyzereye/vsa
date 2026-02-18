@@ -16,6 +16,7 @@ export async function fetchUsers(token) {
     role: u.role,
     status: u.status,
     joinDate: u.joinDate,
+    instructorNumber: u.instructorNumber ?? null,
   }));
 }
 
@@ -82,6 +83,21 @@ export async function fetchEvents(eventType, options = {}) {
     canceled: e.canceled,
     dateChanged: e.dateChanged,
     locationChanged: e.locationChanged,
+    instructorId: e.instructorId ?? null,
+    instructorName: e.instructorName ?? null,
+  }));
+}
+
+export async function fetchInstructors() {
+  const res = await fetch(`${API_BASE}/team-profiles/instructors`);
+  if (!res.ok) throw new Error("Failed to fetch instructors");
+  const data = await res.json();
+  return data.map((i) => ({
+    id: i.id,
+    name: i.name,
+    bio: i.bio ?? null,
+    imageUrl: i.imageUrl ? (i.imageUrl.startsWith("http") ? i.imageUrl : `${API_BASE}/uploads/${i.imageUrl}`) : null,
+    displayOrder: i.displayOrder,
   }));
 }
 
@@ -122,6 +138,7 @@ export async function fetchEventById(id) {
     dateChanged: e.dateChanged,
     locationChanged: e.locationChanged,
     eventType: e.eventType,
+    instructorId: e.instructorId ?? null,
   };
 }
 
@@ -282,54 +299,59 @@ export async function deleteNews(id, token) {
   if (!res.ok) throw new Error((await res.json()).message || "Failed to delete news");
 }
 
-// Gallery (public list; upload/delete require auth)
-const GALLERY_BASE = `${API_BASE}/gallery`;
+// Media library (public list; upload/delete require auth)
+const MEDIA_BASE = `${API_BASE}/media`;
 const UPLOADS_BASE = `${API_BASE}/uploads`;
 
-export function galleryImageUrl(url) {
-  if (!url) return "";
-  if (url.startsWith("http")) return url;
-  return `${UPLOADS_BASE}/${url}`;
+export function mediaUrl(pathOrUrl) {
+  if (!pathOrUrl) return "";
+  if (pathOrUrl.startsWith("http")) return pathOrUrl;
+  return `${UPLOADS_BASE}/${pathOrUrl}`;
 }
 
-export async function fetchGallery() {
-  const res = await fetch(GALLERY_BASE);
-  if (!res.ok) throw new Error("Failed to fetch gallery");
+export async function fetchMedia(type) {
+  const url = type ? `${MEDIA_BASE}?type=${encodeURIComponent(type)}` : MEDIA_BASE;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch media");
   const data = await res.json();
-  return data.map((g) => ({
-    id: g.id,
-    url: g.url,
-    altText: g.altText,
-    caption: g.caption,
-    displayOrder: g.displayOrder,
-    eventId: g.eventId,
-    eventTitle: g.eventTitle,
-    createdAt: g.createdAt,
+  return data.map((m) => ({
+    id: m.id,
+    type: m.type,
+    path: m.path,
+    altText: m.altText,
+    caption: m.caption,
+    displayOrder: m.displayOrder,
+    eventId: m.eventId,
+    eventTitle: m.eventTitle,
+    teamProfileId: m.teamProfileId,
+    title: m.title,
+    fileType: m.fileType,
+    createdAt: m.createdAt,
   }));
 }
 
-export async function uploadGalleryImage(formData, token) {
-  const res = await fetch(GALLERY_BASE, {
+export async function uploadMedia(formData, type, token) {
+  const url = `${MEDIA_BASE}?type=${encodeURIComponent(type || "gallery")}`;
+  const res = await fetch(url, {
     method: "POST",
     headers: authHeaders(token),
     body: formData,
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    const msg = data.error ? `${data.message}: ${data.error}` : (data.message || "Failed to upload image");
-    throw new Error(msg);
+    throw new Error(data.message || "Failed to upload file");
   }
   return res.json();
 }
 
-export async function deleteGalleryImage(id, token) {
-  const res = await fetch(`${GALLERY_BASE}/${id}`, {
+export async function deleteMedia(id, token) {
+  const res = await fetch(`${MEDIA_BASE}/${id}`, {
     method: "DELETE",
     headers: authHeaders(token),
   });
   if (!res.ok) {
     const data = await res.json().catch(() => ({}));
-    throw new Error(data.message || "Failed to delete image");
+    throw new Error(data.message || "Failed to delete media");
   }
 }
 

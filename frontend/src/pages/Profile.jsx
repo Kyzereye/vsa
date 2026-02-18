@@ -22,6 +22,7 @@ function Profile() {
     email: "",
     phone: "",
     emailOptIn: false,
+    instructorNumber: "",
   });
   const [passwordData, setPasswordData] = useState({
     currentPassword: "",
@@ -57,6 +58,7 @@ function Profile() {
         email: user.email || "",
         phone: user.phone || "",
         emailOptIn: user.emailOptIn ?? false,
+        instructorNumber: user.instructorNumber ?? "",
       });
     } else if (token) {
       // If we have a token but no user, try to refresh user data
@@ -72,6 +74,13 @@ function Profile() {
     if (name === "phone") {
       const digits = String(value).replace(/\D/g, "").slice(0, 10);
       setFormData((prev) => ({ ...prev, phone: digits }));
+      setError("");
+      setSuccess("");
+      return;
+    }
+    if (name === "instructorNumber") {
+      const alphanumeric = String(value).replace(/[^A-Za-z0-9]/g, "").slice(0, 10);
+      setFormData((prev) => ({ ...prev, instructorNumber: alphanumeric }));
       setError("");
       setSuccess("");
       return;
@@ -453,6 +462,24 @@ function Profile() {
                       <span>Opt in for email updates</span>
                     </label>
                   </div>
+
+                  {user.role === "instructor" && (
+                    <div className="auth-field">
+                      <label htmlFor="instructorNumber">NRA Instructor Number</label>
+                      <input
+                        id="instructorNumber"
+                        name="instructorNumber"
+                        type="text"
+                        value={formData.instructorNumber}
+                        onChange={handleChange}
+                        className="auth-input"
+                        placeholder="9–10 alphanumeric characters"
+                        maxLength={10}
+                        pattern="[A-Za-z0-9]{9,10}"
+                        title="9–10 alphanumeric characters"
+                      />
+                    </div>
+                  )}
 
                   <button
                     type="submit"

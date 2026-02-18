@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { formatEventDateDisplay } from "../utils/date";
+import { fetchInstructors } from "../api";
 
 function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
   const [editingId, setEditingId] = useState(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [instructors, setInstructors] = useState([]);
   const [formData, setFormData] = useState({
     date: "",
     title: "",
@@ -14,7 +16,16 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
     canceled: false,
     dateChanged: false,
     locationChanged: false,
+    instructorId: "",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchInstructors()
+      .then((list) => { if (!cancelled) setInstructors(list); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   const handleEdit = (event) => {
     setEditingId(event.id);
@@ -45,6 +56,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
       canceled: false,
       dateChanged: false,
       locationChanged: false,
+      instructorId: "",
     });
   };
 
@@ -171,6 +183,24 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                 <option value="orgPA">Org meeting PA</option>
               </select>
             </div>
+            {(formData.eventType === "trainingNY" || formData.eventType === "trainingPA") && (
+              <div>
+                <label>Instructor (optional)</label>
+                <select
+                  name="instructorId"
+                  value={formData.instructorId}
+                  onChange={handleChange}
+                  className="admin-input"
+                >
+                  <option value="">— None —</option>
+                  {instructors.map((i) => (
+                    <option key={i.id} value={i.id}>
+                      {i.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
             <div>
               <label>
                 <input
@@ -262,11 +292,31 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                         className="admin-input"
                         style={{ minWidth: "8rem" }}
                       >
-                        <option value="vsa">VSA only</option>
+                        <option value="vsaNY">VSA NY</option>
+                        <option value="vsaPA">VSA PA</option>
                         <option value="shredvets">ShredVets</option>
-                        <option value="org">Org meeting</option>
-                        <option value="training">Training</option>
+                        <option value="trainingNY">Training NY</option>
+                        <option value="trainingPA">Training PA</option>
+                        <option value="orgNY">Org NY</option>
+                        <option value="orgPA">Org PA</option>
                       </select>
+                      {(formData.eventType === "trainingNY" || formData.eventType === "trainingPA") && (
+                        <select
+                          name="instructorId"
+                          value={formData.instructorId}
+                          onChange={handleChange}
+                          className="admin-input"
+                          style={{ marginTop: "0.25rem", minWidth: "10rem" }}
+                          title="Instructor (optional)"
+                        >
+                          <option value="">Instructor (optional)</option>
+                          {instructors.map((i) => (
+                            <option key={i.id} value={i.id}>
+                              {i.name}
+                            </option>
+                          ))}
+                        </select>
+                      )}
                     </td>
                     <td>
                       <label>

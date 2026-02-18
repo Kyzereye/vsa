@@ -15,34 +15,73 @@ DROP TABLE IF EXISTS event_registrations;
 DROP TABLE IF EXISTS event_details;
 DROP TABLE IF EXISTS password_reset_tokens;
 DROP TABLE IF EXISTS email_verifications;
+DROP TABLE IF EXISTS media;
 DROP TABLE IF EXISTS gallery_images;
 DROP TABLE IF EXISTS news;
 DROP TABLE IF EXISTS programs;
 DROP TABLE IF EXISTS events;
+DROP TABLE IF EXISTS team_profiles;
+DROP TABLE IF EXISTS user_details;
 DROP TABLE IF EXISTS users;
 
 -- ============================================
--- USERS TABLE
+-- USERS TABLE (login only)
 -- ============================================
 CREATE TABLE IF NOT EXISTS users (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
-    phone VARCHAR(50),
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'member') NOT NULL DEFAULT 'member',
     status ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
-    join_date DATE NOT NULL,
-    email_opt_in TINYINT(1) NOT NULL DEFAULT 0,
     email_verified TINYINT(1) NOT NULL DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 CREATE INDEX idx_users_email ON users(email);
-CREATE INDEX idx_users_role ON users(role);
 CREATE INDEX idx_users_status ON users(status);
 CREATE INDEX idx_users_email_verified ON users(email_verified);
+
+-- ============================================
+-- USER DETAILS TABLE (profile/member data; 1:1 with users)
+-- ============================================
+CREATE TABLE IF NOT EXISTS user_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
+    phone VARCHAR(50),
+    role ENUM('admin', 'member', 'instructor', 'boardmember') NOT NULL DEFAULT 'member',
+    join_date DATE NOT NULL,
+    email_opt_in TINYINT(1) NOT NULL DEFAULT 0,
+    instructor_number VARCHAR(10) NULL COMMENT 'NRA Instructor Number; only for role=instructor',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE INDEX idx_user_details_user_id ON user_details(user_id);
+
+-- ============================================
+-- TEAM PROFILES TABLE (public name/bio; instructors, board, etc.)
+-- ============================================
+-- One row per person; is_instructor and is_board_member can both be 1. user_id optional (link if they have a login).
+CREATE TABLE IF NOT EXISTS team_profiles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NULL,
+    name VARCHAR(255) NOT NULL,
+    bio TEXT,
+    image_url VARCHAR(500) NULL,
+    display_order INT NOT NULL DEFAULT 0,
+    is_instructor TINYINT(1) NOT NULL DEFAULT 0,
+    is_board_member TINYINT(1) NOT NULL DEFAULT 0,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+CREATE INDEX idx_team_profiles_user_id ON team_profiles(user_id);
+CREATE INDEX idx_team_profiles_instructor ON team_profiles(is_instructor);
+CREATE INDEX idx_team_profiles_board ON team_profiles(is_board_member);
+CREATE INDEX idx_team_profiles_display_order ON team_profiles(display_order);
 
 -- ============================================
 -- EVENTS TABLE
@@ -60,11 +99,14 @@ CREATE TABLE IF NOT EXISTS events (
     canceled BOOLEAN NOT NULL DEFAULT FALSE,
     date_changed BOOLEAN NOT NULL DEFAULT FALSE,
     location_changed BOOLEAN NOT NULL DEFAULT FALSE,
+    instructor_id INT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (instructor_id) REFERENCES team_profiles(id) ON DELETE SET NULL
 );
 
 CREATE INDEX idx_events_type ON events(event_type);
+CREATE INDEX idx_events_instructor ON events(instructor_id);
 CREATE INDEX idx_events_slug ON events(slug);
 CREATE INDEX idx_events_date ON events(date);
 CREATE INDEX idx_events_canceled ON events(canceled);
@@ -115,21 +157,29 @@ CREATE TABLE IF NOT EXISTS news (
 CREATE INDEX idx_news_published_date ON news(published_date);
 
 -- ============================================
--- GALLERY IMAGES TABLE
+-- MEDIA TABLE (images and documents; type = gallery | event | page | team | document)
 -- ============================================
-CREATE TABLE IF NOT EXISTS gallery_images (
+-- path is relative to uploads root (e.g. gallery/foo.jpg, events/bar.jpg, team/xyz.jpg, documents/file.pdf)
+CREATE TABLE IF NOT EXISTS media (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    url VARCHAR(500) NOT NULL,
+    type ENUM('gallery', 'event', 'page', 'team', 'document') NOT NULL,
+    path VARCHAR(500) NOT NULL,
     alt_text VARCHAR(255),
     caption VARCHAR(500),
-    display_order INT DEFAULT 0,
+    display_order INT NOT NULL DEFAULT 0,
     event_id INT NULL,
+    team_profile_id INT NULL,
+    title VARCHAR(255) NULL,
+    file_type VARCHAR(100) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL,
+    FOREIGN KEY (team_profile_id) REFERENCES team_profiles(id) ON DELETE SET NULL
 );
 
-CREATE INDEX idx_gallery_display_order ON gallery_images(display_order);
-CREATE INDEX idx_gallery_event_id ON gallery_images(event_id);
+CREATE INDEX idx_media_type ON media(type);
+CREATE INDEX idx_media_display_order ON media(display_order);
+CREATE INDEX idx_media_event_id ON media(event_id);
+CREATE INDEX idx_media_team_profile_id ON media(team_profile_id);
 
 -- ============================================
 -- EMAIL VERIFICATIONS TABLE
@@ -189,17 +239,39 @@ CREATE INDEX idx_registrations_email ON event_registrations(email);
 -- INSERT DATA
 -- ============================================
 
--- Insert Users
--- Note: Password hashes are bcrypt hashes. In production, generate these securely.
--- Default admin: admin@vsa.org / admin123
--- Default member: john@example.com / password123
-INSERT INTO users (id, name, email, phone, password_hash, role, status, join_date, email_opt_in, email_verified) VALUES
-(1, 'Jeff Kyzer', 'kyzereye@gmail.com', '3038174277', '$2a$10$zo0RuHqanlueULMwJJqkwuDshveGb7PqWvjVstxBUbbxrMhbFVeQ6', 'admin', 'active', '2024-01-01', 0, 1),
-(2, 'Noel Dillon', 'n.dillon@holtec.com', '8455195619', '$2a$10$BVNOhsbKRd/V.LpqpmkvJeT84aZ9.c0HyvdK9Bv43oWw9IWJdiGAy', 'admin', 'active', '2024-01-31', 0, 1);
+-- Insert Users (login) and User Details (profile)
+-- Passwords: bcrypt hashes. In production, generate securely.
+INSERT INTO users (id, email, password_hash, status, email_verified) VALUES
+(1, 'kyzereye@gmail.com', '$2a$10$zo0RuHqanlueULMwJJqkwuDshveGb7PqWvjVstxBUbbxrMhbFVeQ6', 'active', 1),
+(2, 'n.dillon@holtec.com', '$2a$10$BVNOhsbKRd/V.LpqpmkvJeT84aZ9.c0HyvdK9Bv43oWw9IWJdiGAy', 'active', 1);
 
--- Reset auto increment for users table (optional - only needed if inserting with specific IDs)
--- Note: MySQL doesn't allow subqueries in ALTER TABLE, so set manually if needed
--- ALTER TABLE users AUTO_INCREMENT = 3;
+INSERT INTO user_details (user_id, name, phone, role, join_date, email_opt_in) VALUES
+(1, 'Jeff Kyzer', '3038174277', 'admin', '2024-01-01', 0),
+(2, 'Noel Dillon', '8455195619', 'admin', '2024-01-31', 0);
+
+-- Team profiles (instructors / board); source: veteranssportsmensassociation.org/team
+INSERT INTO team_profiles (name, bio, image_url, display_order, is_instructor, is_board_member, user_id) VALUES
+('Noel Dillon', 'Noel Dillon has worked in the Nuclear Security field for more than 30 years. Since founding the Veterans Sportsmens Association (VSA) in 2016, Noel has consistently brought a passion and dedication to this team and its support for local Veterans. Noel spent over twenty (20) years in the USAF including multiple combat tours and deployments to Afghanistan, Iraq, and numerous other locations in the Middle East, Africa, Asia, Central and South America. During his military service he specialized in Force Protection, Counter-Terrorism, Weapons of Mass Destruction, Logistics, and Intelligence. In addition, he served as a Survey Team Leader and Collapse Structure Rescue Team Leader for 12 years on the NY CERF-P and Region 2 HRF. In the civilian sector he served as a Indian Point Nuclear Power Plant Fire Brigade Member, Confined Space Rescue Technician, Indian Point Hazmat Technician and Site EMT. He also Volunteered with the Arlington Fire Department as a Fire Fighter and EMT for more than 10 years, and has been a member of the Dutchess County Hazmat Team for more than 20 years. As the President of the VSA and Lead Instructor, Noel has built a Cadre of exceptional instructors and established the VSA as a registered 501c3 Veterans based non-profit in the Hudson Valley area of NY. He is currently an NRA certified Chief Range Safety Officer and a NRA Instructor certified to teach CCW, Basic Pistol, Basic Rifle, Defensive Pistol, Personal Protection Inside the Home, and Personal Protection Outside the Home. He is also a Certified UTAH BCI Instructor, ALERRT Active Shooter Instructor, and a Law Enforcement Precision Rifle, Handgun, Shotgun and Simunitions Instructor. Noel has three Masters Degrees from John Jay College in Public Administration, Protection Management, and Emergency Management.', 'team_images/todd_dillon.avif', 1, 1, 1, 2),
+('Steven Mattes', 'Steve Mattes is a Marine Corps Veteran who served as Military Police in the Corrections Field. This experience instilled a constant state of mind of security and awareness. A nearly life time practitioner of martial arts which led to the exploration of many disciplines. In 2013 he was awarded Roku (6th) Dan in Bujinkan Budo Taijutsu (Ninjutsu) and he is currently exploring the art of Jeet Kune Do to further his understanding of the martial way. Steve is an NRA certified Chief Range Safety Officer and a NRA instructor certified to teach Home Firearm Safety, Basic Pistol, Basic Rifle, Basic Shotgun, Personal Protection Inside the Home, Personal Protection Outside the Home. He is constantly participating in his own training to further his knowledge and understanding of all aspects of self-protection as well as the protection of others.', 'team_images/STEVEN_MATTES.avif', 2, 1, 0, NULL),
+('Timothy Roberts', 'Tim Roberts served 23 Years in the US Military, in both the Air Force Security Forces and in the Army as a Forward Observer. His duties included Nuclear missile security, Naval Brig Security, Emergency Services Team, anti terrorism, interrogation procedures, SWAT operations and tactics, providing Presidential and Vice Presidential protection, as well as Foreign Dignitary protection. He currently works in Nuclear Security and is certified as an NRA firearms instructor as a Chief Range Safety Officer, and Shotgun Instructor.', 'team_images/TIMOTHY_ROBERTS.avif', 3, 1, 0, NULL),
+('John Wasikowitz', 'John Wasikowitz entered US Navy in May of 1969 at the Recruit Training Command Great Lakes IL. During Boot camp he qualified with Rifle and became familiarized with pistols. In 1971 he qualified with .38 pistol for the TAD Shore Patrol assignment. After release from active duty April 1973 he joined the Active Reserves. There he received the Navy Pistol Expert Medal after scoring expert 3 years in a row ( Now sailors only have to get the score once). John became a Navy instructor in 1973 and conducted many various classes pertaining to General Military Training, Safety, First aid, Ship board And Aircraft Fire Fighting. John retired from the Navy as a Chief Petty Officer ABE-C E-7. In 1986 he took the NRA rifle instructor course and worked with BSA and 4H groups. He also gave Firearms safety instruction to his volunteer ambulance corp. John has been a firearms instructor for more than 34 years.', 'team_images/JOHN_WASIKOWITZ.avif', 4, 1, 0, NULL),
+('Michelle Depew', 'Energetic and driven, we were thrilled when Michelle Depew joined as our team as an experienced NRA Instructor. Michelle is always excited to take on the next challenge and push our team forward.', 'team_images/MICHELLE_DEPEW.avif', 5, 1, 0, NULL),
+('Carlos Prince', 'Carlos Prince is a SMsgt. Retired, USAF, and the Chairman of the Hudson Valley Veterans Alliance. Carlos Prince was born in Panama and currently resides in Hopewell Junction, NY. He honorably served 31 years in the United States Air Force, attached to the 514th Civil Engineer Squadron. Today Carlos runs his own HVAC business called Pana Breeze, is working on his A.A. in Political Science, and sits on NYS Senator (41st Dist.) Sue Serino''s Veteran Advisory Committee. Carlos joined the VSA as a Trustee, and is now a NRA certified firearms instructor in Pistol, Rifle, and Shotgun.', 'team_images/CARLOS_PRINCE.avif', 6, 1, 1, NULL),
+('Frank Kolarik', 'Frank Kolarik is a combat veteran of the U.S. Army''s 82nd Airborne Division where he served as an Airborne Infantry squad leader. Before completing his enlistment, Frank was introduced to law enforcement as a special investigator for the Army''s Criminal Investigation Division (CID). Upon completing his tour of duty, Frank went on to a distinguished career as a police officer in Westchester County, NY, where he served as a patrolman, a member of his department''s emergency services and scuba units, and finally as a detective. Frank was also a certified police instructor and has taught at numerous police academies throughout New York State. Frank has earned two black belts in the martial arts and is an FBI Certified Police Defensive Tactics Instructor. Upon his retirement, Frank continued teaching criminal justice at both the high school and college level. Frank is active with the VSA and the American Legion, is an NRA certified firearms instructor, and teaches the New York State Security Guard certification course.', 'team_images/FRANK_KOLARIK.avif', 7, 1, 0, NULL),
+('Ari Moskowitz', 'Ari Moskowitz is a retired Police Sergeant, with 29 years of full time service. During his tenure, he served as the Firearms Instructor, TASER Instructor and General Topics Instructor for his department. He is presently working as a Security Responder at Indian Point Nuclear Power Plant, as well as being a Part-Time Firearms Instructor for General Dynamics. Ari is also a retired U.S. Army (MP) Captain, with extensive experience in large scale training operations and planning. His last command assignment was as a Drill Sergeant Company Commander, leading him to be activated in 2004 to be a part of a select group of 127 Military Advisors to the Iraqi Army, where he specialized in G-1 and G-2 training for Iraqi Command Staff Officers. Based on his firearms and training experience, he was also tasked to help train and supervise Iraqi soldiers in pistol and rifle courses that prepared them for their service in the Iraqi Army. His Police Instructor certifications include: Firearms Instructor, Defensive Tactics Instructor, TASER Instructor, Pepper Spray Instructor and Emergency Vehicle Operator Instructor and General Topics Instructor. Ari has a Bachelor of Arts Degree in Forensic Psychology from John Jay College of Criminal Justice. Ari is a licensed New York State Private Investigator and was a member of the Orange County Emergency Management Team.', 'team_images/ARI_MOSKOWITZ.avif', 8, 1, 0, NULL),
+('Melissa Brady', 'Melissa Brady is an active member of the Veterans Sportsmens Association. She is one of our female instructors who takes pride in educating people who want to learn to shoot and the safety aspect involved. Melissa has been in firearms industry for close to 7 years going through training and earning certifications to further her knowledge on the field. Some of Melissa''s her credentials include Basic instructor training, NRA Basic Pistol, NRA Instructor, NRA Range Safety Officer, NRA Chief Range Safety Officer, NRA Basic Shotgun, NRA Shotgun Instructor, and Basic Rifle. For the past few years she has worked in the security world training and working spos''n detection dogs as well as her full time job is a nuclear security officer. Melissa volunteers her time and training to rescue dogs, train and donate them to police departments for working K9s and to veterans for companion/emotional support dogs. Melissa believes that it is important to train and the skills to protect yourself, your family and people around you.', 'team_images/MELISSA_BRADY.avif', 9, 1, 0, NULL),
+('Brian Pfleger', 'Brian Pfleger enlisted in the Air National Guard in 2012 attached to the 106th Rescue Wing. He continues to serve as avionics Guidance and Control Specialist as a Staff Sergeant, and was deployed in 2018 to Iraq in support of Operation Inherent Resolve. His military experience, as well as strong passion and knowledge of firearms has been recognized by the VSA to become one of our many instructors, as well as our recording secretary.', 'team_images/BRIAN_PFLEGER.avif', 10, 1, 1, NULL),
+('Louis "Roc" Rivera', 'Roc Rivera', 'team_images/LOUIS_RIVERA.avif', 11, 1, 0, NULL),
+('Rob Ferguson', 'I believe in safety and constant training! We train together and we learn together. Leave your ego in the parking lot. 18 years and retired Law Enforcement, GLOCK Armorer, Field Training Officer. NYS DCJS Certified Department & Police Academy Firearms Instructor. NRA Certified Chief Range Instructor. NRA Certified Basic Pistol Instructor. NYS Certified Instructor Development School / Law Enforcement General Topics Instructor. Active member of VSA. NRA Basic Instructor Training. NYS DCJS Handgun, Shotgun and Patrol Rifle Instructor. Patrol Rifle Trained and SWAT Cross Trained.', 'team_images/ROB_FERGUSON.avif', 12, 1, 0, NULL),
+('Joe Mancini', 'Joe is Veterans Sportsmens Association Board Member and Firearms Instructor, as well as a retired firefighter and EMT. He started shooting at the age of 10 and completed the NRA Junior Division Program. He is an NRA Certified Pistol, Rifle, Shotgun Instructor, and Chief Range Safety Officer. As a former Boy Scout leader, he was a teacher of shooting sports to both scouts and adults. Joe has been a reloading for over 40 years specializing in wildcat cartridges and is currently long range shooting.', 'team_images/Joseph_Mancini.avif', 13, 1, 1, NULL),
+('Joe Fisher', 'Joseph Fisher is a NYS, Department of Defense and United States Air Force Certified Instructor. He is a 12 year veteran of the Air National Guard and a 25 year veteran of the New York City Police Department. He currently owns and operates his own company, Cop Prop Rentals of NY, a film and television prop supply firm specializing in police equipment and prop weapons. He currently works as a Prop Master, Consultant, Technical Advisor, Actor and Theatrical Weapons Wrangler in the entertainment industry. Due to his vast background, experiences and expertise in this field, Fisher has been featured as a commentator and subject matter expert by every major news and television network here in the US and globally. As a member of the 105th Airlift Wing of the NYS ANG, TSgt Fisher spent 12 years teaching for the United States Air Force as a 3E9X1. There he served as a CBRN Instructor, Emergency Manager, CBRN Technician, ProBoard Certified HazMat Technician and obtained a degree from the Community College of the Air Force in Emergency Management. While serving at the 105th Airlift Wing, TSgt Fisher was also a Cadre member of the newly formed NYS CERF(P) Taskforce, a multi-branch WMD Response Team created to respond to Domestic Incidents involving the use of Chemical, Biological or Nuclear Weapons. Fisher began teaching for the NYPD in 1998 at the Management Training Unit, a Police Academy unit providing in-service training to Patrol Supervisors and Leadership in Tactics, Counter-Terrorism and Criminal Procedure Law. During his 25 year career with the NYPD he worked as a patrol officer, crime prevention officer, instructor and detective and was recognized and awarded on several occasions for his contributions to the Department and to the public. Joseph Fisher joined the VSA as a Founding Member in 2020 and has made a few contributions to this organization including the new logo, coin designs and digitalizing our membership application process. He brings his knowledge, experience and passion for teaching to the VSA as an instructor to help his fellow veterans in all they do.', 'team_images/JOE_FISHER.avif', 14, 1, 0, NULL),
+('John Reifenberger', 'John Reifenberger serve the United States Navy as an aviation electronic technician aboard the USS coral sea. John volunteers his time as a firearms instructor with the Boy Scouts of America greater New York council shooting sports committee. John is currently certified as an NRA instructor in, NRA basic pistol, NRA basic shotgun, NRA basic rifle, NRA muzzle loading rifle and NRA metallic cartridge reloading. He is also a Chief Range Safety Officer and NRA Training Counselor (TC).', 'team_images/JOHN_REIFENBERGER.avif', 15, 1, 0, NULL),
+('Jay Rusnock', 'Jay has dedicated a lifetime to the safe and responsible use of firearms. Recently retired from a 25 year career with the National Rifle Association. Previously serving in Emergency Services, LE, Corrections, private security fields and the NY Guard. His experience includes nationally recognized firearm academies and he holds NRA Instructor certifications in: Pistol, Rifle, Shotgun, Reloading, Refuse to be a Victim, CCW, Personal Protection in the Home, Home Firearm Safety, and Chief Range Safety Officer.', 'team_images/JAY_RUSNOCK.avif', 16, 1, 0, NULL),
+('Scott and Jackie Emslie', 'Scott Emslie is a Current Board Member of the NRA. Both Scott and Jackie Emslie are from Poughkeepsie, N.Y. Together, they have volunteered with the Mid-Hudson Friends of the NRA committee since its inception in 1993, serving in numerous roles and positions throughout that time. Over the years, they have also attended and assisted at countless other Friends of NRA banquets all over the upper New York state area. Jackie and Scott Emslie are just the embodiment of the ultimate Friends of NRA volunteers. Jackie and Scott Emslie are both founding members of the Veterans Sportsmens Association (VSA) and they both serve actively on the VSA Board of Directors.', 'team_images/SCOTT_JACKIE_EMSLIE.avif', 17, 1, 1, NULL),
+('Anthony R. Morrone', 'City of Poughkeepsie Police Officer 2001 - Present. ESU - 5 Years. F.B.I. SWAT School Graduate 2007. NTOA Barricade & Hostage Rescue. NRA Instructor for Handgun, Rifle and Shotgun.', 'team_images/ANTHONY_MORRONE.avif', 18, 1, 0, NULL),
+('John-David Wellman', 'J-D began his journey in shooting sports and with firearms while serving as a BSA leader. Seeking to benefit his pack and then troop, he sought out training and became NRA certified as a Rifle and Shotgun instructor, as well as a Range Safety Officer (and, now a Chief Range Officer) in order to teach, train, and supervise scouts. He has since spent many years working with scouts, including shooting sports merit badges, and running ranges at BSA camps and events. He continues to serve scouting as an advisor and coach of a BSA Shooting Sports Venture Crew (and American Legion sponsored) Junior Shooting Sports 3-position precision rifle team. Beyond this work, J-D continues his own training, and continues to help to train youth and adults across a variety of venues.', 'team_images/JOHN-DAVID_WELLMAN.avif', 19, 1, 0, NULL),
+('Victor Zamaloff', 'Victor is a former Army Medic and retired Fire Fighter/Paramedic with the Arlington Fire District. He is an NRA Firearms Instructor with multiple certifications. He currently works for the MHA Vet2Vet program assisting Local Veterans in need', 'team_images/VICTOR_ZAMALOFF.avif', 20, 1, 0, NULL),
+('Patrick Cordova', 'Patrick Cordova, Major (Ret.), has been in Public Affairs since he graduated from the Defense Information School (DINFOS) in 2005. During his 24 years of service, he has participated in numerous domestic operations, from being amongst the first to deploy to New York City in response to the terror attacks on September 11, leading crisis communications efforts in Puerto Rico after Hurricane Maria ravaged the island in 2017, and the Unified Command PAO at the Javits New York Medical Station during COVID-19 response efforts. In addition to his assignments in the United States, he has seen service in Europe and Southeast Asia. In his civilian status, he works as a Public Affairs Specialist at the Defense Information Systems Agency (DISA) in Fort Meade, Maryland. Before this role, he was the Chief of Communications for the Bronx VA Hospital, an Orange County Deputy Sheriff, a New York State Court Officer, a Sommelier, and a Whiskey Aficionado.', 'team_images/PATRICK_CORDOVA.avif', 21, 1, 0, NULL);
 
 -- Insert Events (one row per unique event)
 -- location = venue/place name; address = street address (optional)
@@ -433,12 +505,12 @@ INSERT INTO news (id, title, description, published_date) VALUES
 -- Reset auto increment for news table (optional - only needed if inserting with specific IDs)
 -- ALTER TABLE news AUTO_INCREMENT = 7;
 
--- Insert Gallery Images (event_id NULL = no event assigned)
-INSERT INTO gallery_images (id, url, alt_text, caption, display_order, event_id) VALUES
-(1, 'https://static.wixstatic.com/media/30c799_6c5b7f47d057455497bc4936c6462790~mv2.jpg', 'VSA Event', NULL, 1, NULL),
-(2, 'https://static.wixstatic.com/media/99ec98fdb81945c29c25a3ad6c5606b1.jpg', 'VSA Activity', NULL, 2, NULL),
-(3, 'https://static.wixstatic.com/media/30c799_56468b7c375d4956ac7b3039bbaf4789~mv2.jpg', 'VSA Program', NULL, 3, NULL),
-(4, 'https://static.wixstatic.com/media/30c799_e52caab3522f42b2b32b55b48215eeb7~mv2.jpg', 'VSA Event', NULL, 4, NULL),
-(5, 'https://static.wixstatic.com/media/30c799_958dd0efbd1c4f26bba179a9dd2d1261~mv2.jpg', 'VSA Activity', NULL, 5, NULL),
-(6, 'https://static.wixstatic.com/media/30c799_10bf358ef0a74b6ab84752c574bcacfe~mv2.jpg', 'VSA Program', NULL, 6, NULL);
+-- Insert Media (gallery images; path relative to uploads root)
+INSERT INTO media (type, path, alt_text, caption, display_order, event_id) VALUES
+('gallery', 'gallery/30c799_6c5b7f47d057455497bc4936c6462790~mv2.jpg', 'VSA Event', NULL, 1, NULL),
+('gallery', 'gallery/99ec98fdb81945c29c25a3ad6c5606b1.jpg', 'VSA Activity', NULL, 2, NULL),
+('gallery', 'gallery/30c799_56468b7c375d4956ac7b3039bbaf4789~mv2.jpg', 'VSA Program', NULL, 3, NULL),
+('gallery', 'gallery/30c799_e52caab3522f42b2b32b55b48215eeb7~mv2.jpg', 'VSA Event', NULL, 4, NULL),
+('gallery', 'gallery/30c799_958dd0efbd1c4f26bba179a9dd2d1261~mv2.jpg', 'VSA Activity', NULL, 5, NULL),
+('gallery', 'gallery/30c799_10bf358ef0a74b6ab84752c574bcacfe~mv2.jpg', 'VSA Program', NULL, 6, NULL);
 

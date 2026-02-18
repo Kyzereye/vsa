@@ -51,9 +51,12 @@ function TrainingPage({ eventType, title, subtitle, backTo, backLabel }) {
           <div className="hero-content">
             <h1>{title}</h1>
             <p style={{ opacity: 0.95 }}>{subtitle}</p>
-            <p style={{ marginTop: "1rem" }}>
+            <p style={{ marginTop: "1rem", display: "flex", gap: "0.75rem", flexWrap: "wrap", justifyContent: "center" }}>
               <Link to={backTo} className="cta-button" style={{ background: "var(--dark-gray)" }}>
                 {backLabel}
+              </Link>
+              <Link to="/training/instructors" className="cta-button">
+                Meet the Instructors
               </Link>
             </p>
           </div>
@@ -70,7 +73,7 @@ function TrainingPage({ eventType, title, subtitle, backTo, backLabel }) {
               <p style={{ textAlign: "center", color: "var(--text-gray)" }}>No upcoming training at the moment. Check back soon.</p>
             ) : (
               <div className="events-list events-list-grid">
-                {upcoming.map(({ id, date, title: eventTitle, location, address, slug, canceled, dateChanged, locationChanged }) => (
+                {upcoming.map(({ id, date, title: eventTitle, location, address, slug, canceled, dateChanged, locationChanged, instructorName }) => (
                   <Link key={id} to={`/events/${slug || id}`} className="event-card event-card-link">
                     <div className="event-date">
                       {formatEventDateDisplay(date)}
@@ -85,6 +88,11 @@ function TrainingPage({ eventType, title, subtitle, backTo, backLabel }) {
                       {address && <div className="event-address">{address}</div>}
                       {locationChanged && <span className="event-status-badge event-status-changed">Location Changed</span>}
                     </div>
+                    {instructorName && (
+                      <div className="event-instructor">
+                        Instructor: {instructorName}
+                      </div>
+                    )}
                   </Link>
                 ))}
               </div>
