@@ -22,3 +22,4 @@ export { default as Meetings } from "./meetings/meetingsNY";
 export { default as Membership } from "./Membership";
 export { default as Training } from "./training/trainingNY";
 export { default as MeetInstructors } from "./training/MeetInstructors";
+export { default as Leadership } from "./Leadership";

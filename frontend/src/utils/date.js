@@ -1,8 +1,12 @@
-/** Format a date (timestamp or YYYY-MM-DD) as "DD MMM YYYY" for display (e.g. 28 Jan 2025). */
+/** Format a date (timestamp or YYYY-MM-DD) as "DD MMM YYYY" for display (e.g. 28 Jan 2025). Parses YYYY-MM-DD as local date to avoid timezone shift. */
 export function formatDateDDMMMYYYY(date) {
   if (!date) return "";
-  const d = new Date(date);
-  if (Number.isNaN(d.getTime())) return String(date);
+  const s = String(date).trim();
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const d = iso
+    ? new Date(parseInt(iso[1], 10), parseInt(iso[2], 10) - 1, parseInt(iso[3], 10))
+    : new Date(date);
+  if (Number.isNaN(d.getTime())) return s;
   const day = String(d.getDate()).padStart(2, "0");
   const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const month = months[d.getMonth()];

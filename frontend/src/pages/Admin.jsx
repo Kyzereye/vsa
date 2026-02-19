@@ -8,6 +8,7 @@ import AdminPrograms from "../components/AdminPrograms";
 import AdminNews from "../components/AdminNews";
 import AdminRegistrations from "../components/AdminRegistrations";
 import AdminMedia from "../components/AdminMedia";
+import AdminBoard from "../components/AdminBoard";
 import { useAuth } from "../contexts/AuthContext";
 import {
   fetchUsers,
@@ -16,6 +17,7 @@ import {
   fetchNews,
   fetchRegistrations,
   fetchMedia,
+  fetchBoardMembers,
   uploadMedia,
   deleteMedia,
   updateUser,
@@ -29,6 +31,8 @@ import {
   createNews,
   updateNews,
   deleteNews,
+  createTeamProfile,
+  updateTeamProfile,
 } from "../api";
 
 function Admin() {
@@ -40,23 +44,25 @@ function Admin() {
   const [news, setNews] = useState([]);
   const [registrations, setRegistrations] = useState([]);
   const [media, setMedia] = useState([]);
+  const [boardMembers, setBoardMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingUser, setEditingUser] = useState(null);
-  const [formData, setFormData] = useState({ name: "", email: "", phone: "", role: "member", status: "active", instructorNumber: "" });
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", role: "member", status: "active", instructorNumber: "", joinDate: "" });
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const [u, e, p, n, reg, med] = await Promise.all([
+        const [u, e, p, n, reg, med, board] = await Promise.all([
           token ? fetchUsers(token).catch(() => []) : Promise.resolve([]),
           fetchEvents().catch(() => []),
           fetchPrograms().catch(() => []),
           fetchNews().catch(() => []),
           token ? fetchRegistrations(token).catch(() => []) : Promise.resolve([]),
           fetchMedia().catch(() => []),
+          fetchBoardMembers().catch(() => []),
         ]);
         setUsers(u);
         setEvents(e.map((ev) => ({ ...ev, status: ev.eventType || "vsaNY" })));
@@ -64,6 +70,7 @@ function Admin() {
         setNews(n);
         setRegistrations(reg);
         setMedia(med);
+        setBoardMembers(board);
       } catch (err) {
         setError(err.message);
       } finally {
@@ -86,7 +93,7 @@ function Admin() {
 
   const handleCancel = () => {
     setEditingUser(null);
-    setFormData({ name: "", email: "", phone: "", role: "member", status: "active", instructorNumber: "" });
+    setFormData({ name: "", email: "", phone: "", role: "member", status: "active", instructorNumber: "", joinDate: "" });
   };
 
   const handleSave = async (userId) => {
@@ -304,6 +311,13 @@ function Admin() {
               >
                 Media
               </button>
+              <button
+                type="button"
+                className={`admin-tab ${activeTab === "board" ? "active" : ""}`}
+                onClick={() => setActiveTab("board")}
+              >
+                Board
+              </button>
             </div>
 
             {activeTab === "users" && (
@@ -395,7 +409,15 @@ function Admin() {
                               <option value="inactive">Inactive</option>
                             </select>
                           </td>
-                          <td>{user.joinDate}</td>
+                          <td>
+                            <input
+                              type="date"
+                              name="joinDate"
+                              value={formData.joinDate}
+                              onChange={handleChange}
+                              className="admin-input"
+                            />
+                          </td>
                           <td>
                             <div className="admin-actions">
                               <button
@@ -514,6 +536,38 @@ function Admin() {
                   }}
                 />
               </>
+            )}
+
+            {activeTab === "board" && (
+              <AdminBoard
+                boardMembers={boardMembers}
+                onAdd={async (data) => {
+                  if (!token) return;
+                  const created = await createTeamProfile(data, token);
+                  setBoardMembers((prev) => [
+                    ...prev,
+                    {
+                      id: created.id,
+                      name: created.name,
+                      boardPosition: created.boardPosition,
+                      imageUrl: created.imageUrl ?? null,
+                      displayOrder: created.displayOrder ?? 0,
+                    },
+                  ]);
+                }}
+                onUpdate={async (id, data) => {
+                  if (!token) return;
+                  const updated = await updateTeamProfile(id, data, token);
+                  setBoardMembers((prev) =>
+                    prev.map((m) => (m.id === Number(id) ? { ...m, ...updated, boardPosition: updated.boardPosition } : m))
+                  );
+                }}
+                onRemove={async (id) => {
+                  if (!token) return;
+                  await updateTeamProfile(id, { isBoardMember: false }, token);
+                  setBoardMembers((prev) => prev.filter((m) => m.id !== Number(id)));
+                }}
+              />
             )}
             </>
             )}

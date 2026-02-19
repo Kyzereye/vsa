@@ -290,6 +290,11 @@ function Nav() {
             </Link>
           </li>
           <li>
+            <Link to="/leadership" onClick={closeAll}>
+              Leadership
+            </Link>
+          </li>
+          <li>
             <Link to="/gallery" onClick={closeAll}>
               Media
             </Link>

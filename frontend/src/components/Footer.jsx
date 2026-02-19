@@ -54,6 +54,7 @@ function Footer() {
                   </a>
                 );
               })}
+              <Link to="/leadership">Leadership</Link>
               <Link to="/shredvets">ShredVets</Link>
             </>
           )}

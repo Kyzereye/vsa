@@ -101,6 +101,39 @@ export async function fetchInstructors() {
   }));
 }
 
+export async function fetchBoardMembers() {
+  const res = await fetch(`${API_BASE}/team-profiles/board`);
+  if (!res.ok) throw new Error("Failed to fetch board members");
+  const data = await res.json();
+  return data.map((m) => ({
+    id: m.id,
+    name: m.name,
+    imageUrl: m.imageUrl ? (m.imageUrl.startsWith("http") ? m.imageUrl : `${API_BASE}/uploads/${m.imageUrl}`) : null,
+    displayOrder: m.displayOrder,
+    boardPosition: m.boardPosition ?? null,
+  }));
+}
+
+export async function createTeamProfile(data, token) {
+  const res = await fetch(`${API_BASE}/team-profiles`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error((await res.json()).message || "Failed to create");
+  return res.json();
+}
+
+export async function updateTeamProfile(id, data, token) {
+  const res = await fetch(`${API_BASE}/team-profiles/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error((await res.json()).message || "Failed to update");
+  return res.json();
+}
+
 export async function fetchEventBySlug(slug) {
   const res = await fetch(`${API_BASE}/events/by-slug/${encodeURIComponent(slug)}`);
   if (!res.ok) return null;

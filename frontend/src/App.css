@@ -470,6 +470,72 @@ section {
   color: var(--primary-red);
 }
 
+/* Leadership page – three columns */
+.leadership-three-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1.5rem;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+@media (max-width: 768px) {
+  .leadership-three-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
+.leadership-column {
+  background: var(--light-gray);
+  border-radius: 8px;
+  padding: 1.25rem;
+}
+
+.leadership-column-title {
+  margin: 0 0 1rem;
+  font-size: 1rem;
+  color: var(--primary-blue);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  padding-bottom: 0.5rem;
+}
+
+.leadership-slot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.leadership-slot {
+  font-size: 0.95rem;
+  padding: 0.35rem 0;
+  color: var(--dark-gray);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.leadership-slot:last-child {
+  border-bottom: none;
+}
+
+.leadership-slot-exec {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.leadership-slot-label {
+  font-size: 0.8rem;
+  color: var(--text-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.leadership-slot-name {
+  color: var(--dark-gray);
+  font-weight: 500;
+}
+
 /* Organizational meetings list */
 .meetings-list {
   display: flex;

@@ -92,7 +92,7 @@ export const updateUser = async (req, res) => {
     }
 
     const current = existing[0];
-    const { name, email, phone, role, status, password, emailOptIn, instructorNumber } = req.body;
+    const { name, email, phone, role, status, password, emailOptIn, instructorNumber, joinDate } = req.body;
 
     const instructorNumberRegex = /^[A-Za-z0-9]{9,10}$/;
     if (instructorNumber !== undefined && instructorNumber !== null && instructorNumber !== "") {
@@ -145,6 +145,13 @@ export const updateUser = async (req, res) => {
     if (instructorNumber !== undefined && (req.user.role === "admin" || (req.user.id === parseInt(id) && req.user.role === "instructor"))) {
       detailUpdates.push("instructor_number = ?");
       detailValues.push(instructorNumber === null || instructorNumber === "" ? null : String(instructorNumber).trim());
+    }
+    if (joinDate !== undefined && req.user.role === "admin") {
+      const dateStr = String(joinDate).trim();
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
+        detailUpdates.push("join_date = ?");
+        detailValues.push(dateStr);
+      }
     }
 
     if (emailChanged) {
