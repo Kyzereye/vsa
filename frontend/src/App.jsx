@@ -11,23 +11,23 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<AboutPage />} />
         <Route path="/programs" element={<ProgramsPage />} />
-        <Route path="/news" element={<NewsPage />} />
         <Route path="/gallery" element={<GalleryPage />} />
-        <Route path="/shredvets" element={<ShredVets />} />
-        <Route path="/vsa-pa" element={<VsaPA />} />
-        <Route path="/vsa-pa-events" element={<VsaPAEvents />} />
-        <Route path="/vsa-pa-training" element={<VsaPATraining />} />
-        <Route path="/vsa-pa-meetings" element={<VsaPAMeetings />} />
         <Route path="/events" element={<Events />} />
         <Route path="/past-events" element={<PastEvents eventType="vsa" />} />
-        <Route path="/training" element={<Training />} />
-        <Route path="/training/instructors" element={<MeetInstructors />} />
-        <Route path="/leadership" element={<Leadership />} />
-        <Route path="/meetings" element={<Meetings />} />
-        <Route path="/membership" element={<Membership />} />
         <Route path="/shredvets-past-events" element={<PastEvents eventType="shredvets" />} />
         <Route path="/vsa-pa-past-events" element={<PastEvents eventType="vsaPA" />} />
         <Route path="/events/:slug" element={<EventDetail />} />
+        <Route path="/membership" element={<Membership />} />
+        <Route path="/news" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
+        <Route path="/shredvets" element={<ProtectedRoute><ShredVets /></ProtectedRoute>} />
+        <Route path="/vsa-pa" element={<ProtectedRoute><VsaPA /></ProtectedRoute>} />
+        <Route path="/vsa-pa-events" element={<ProtectedRoute><VsaPAEvents /></ProtectedRoute>} />
+        <Route path="/vsa-pa-training" element={<ProtectedRoute><VsaPATraining /></ProtectedRoute>} />
+        <Route path="/vsa-pa-meetings" element={<ProtectedRoute><VsaPAMeetings /></ProtectedRoute>} />
+        <Route path="/training" element={<ProtectedRoute><Training /></ProtectedRoute>} />
+        <Route path="/training/instructors" element={<ProtectedRoute><MeetInstructors /></ProtectedRoute>} />
+        <Route path="/leadership" element={<ProtectedRoute><Leadership /></ProtectedRoute>} />
+        <Route path="/meetings" element={<ProtectedRoute><Meetings /></ProtectedRoute>} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />

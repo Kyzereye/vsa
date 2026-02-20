@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { SHOW_PAST_EVENTS } from "../config";
 
 const MAIN_NAV_LINKS = [
   { href: "#home", label: "Home" },
@@ -10,6 +11,8 @@ const MAIN_NAV_LINKS = [
   { href: "#news", label: "News" },
   { href: "#contact", label: "Contact" },
 ];
+
+const PUBLIC_NAV_HREFS = new Set(["#home", "#about", "#events", "#programs"]);
 
 const OTHER_SITES = [
   { path: "/", label: "VSA - NY" },
@@ -79,12 +82,21 @@ function Nav() {
     e.stopPropagation();
     setOtherSitesOpen((o) => !o);
     setMemberOpen(false);
+    setMenuOpen(false);
   };
 
   const toggleMember = (e) => {
     e.stopPropagation();
     setMemberOpen((o) => !o);
     setOtherSitesOpen(false);
+    setMenuOpen(false);
+  };
+
+  const toggleMenu = (e) => {
+    e.stopPropagation();
+    setMenuOpen((o) => !o);
+    setOtherSitesOpen(false);
+    setMemberOpen(false);
   };
 
   return (
@@ -101,21 +113,89 @@ function Nav() {
         </Link>
 
         <div className="nav-right">
-          <button
-            type="button"
-            className="nav-menu-toggle"
-            onClick={(e) => {
-              e.stopPropagation();
-              setMenuOpen((o) => !o);
-              setOtherSitesOpen(false);
-              setMemberOpen(false);
-            }}
-            aria-expanded={menuOpen}
-            aria-label="Toggle menu"
-          >
-            <span className="nav-menu-icon">☰</span>
-            <span className="nav-menu-label">Menu</span>
-          </button>
+          <div className="nav-dropdown">
+            <button
+              type="button"
+              className="nav-dropdown-trigger"
+              onClick={toggleMenu}
+              aria-expanded={menuOpen}
+              aria-haspopup="true"
+            >
+              Menu
+              <span className="nav-dropdown-chevron">▼</span>
+            </button>
+            {menuOpen && (
+              <ul className="nav-dropdown-panel nav-dropdown-panel-menu" role="menu">
+                <li role="none">
+                  {isOnSectionedPage && isCurrentPage ? (
+                    <a href={anchorHref("home")} className="nav-dropdown-item" onClick={(e) => { e.preventDefault(); handleAnchorClick(e, "#home"); }} role="menuitem">Home</a>
+                  ) : (
+                    <Link to={anchorHref("home")} className="nav-dropdown-item" onClick={closeAll} role="menuitem">Home</Link>
+                  )}
+                </li>
+                {(isAuthenticated() ? MAIN_NAV_LINKS.filter((l) => l.href !== "#home") : MAIN_NAV_LINKS.filter((l) => PUBLIC_NAV_HREFS.has(l.href) && l.href !== "#home")).map(({ href, label }) => {
+                  const hash = href.slice(1);
+                  const isEventsLink = href === "#events";
+                  const eventsOnThisPage = (pathname === "/" || pathname === "/vsa-pa") && isCurrentPage || (isShredvets && isCurrentPage);
+                  const eventsTo = isVsaPA ? "/vsa-pa-events" : isShredvets ? { pathname: "/shredvets", hash: "#events" } : "/events";
+                  if (isEventsLink) {
+                    return (
+                      <li key={href} role="none">
+                        {eventsOnThisPage ? (
+                          <a href={anchorHref(hash)} className="nav-dropdown-item" onClick={(e) => { e.preventDefault(); handleAnchorClick(e, href); }} role="menuitem">{label}</a>
+                        ) : (
+                          <Link to={eventsTo} className="nav-dropdown-item" onClick={closeAll} role="menuitem">{label}</Link>
+                        )}
+                      </li>
+                    );
+                  }
+                  const sectionPageRoutes = { "#about": "/about", "#programs": "/programs", "#news": "/news" };
+                  const sectionPage = sectionPageRoutes[href];
+                  const onHome = pathname === "/" && isCurrentPage;
+                  if (sectionPage && !onHome) {
+                    return (
+                      <li key={href} role="none">
+                        <Link to={sectionPage} className="nav-dropdown-item" onClick={closeAll} role="menuitem">{label}</Link>
+                      </li>
+                    );
+                  }
+                  return (
+                    <li key={href} role="none">
+                      {isOnSectionedPage && isCurrentPage ? (
+                        <a href={anchorHref(hash)} className="nav-dropdown-item" onClick={(e) => { e.preventDefault(); handleAnchorClick(e, href); }} role="menuitem">{label}</a>
+                      ) : (
+                        <Link to={{ pathname: basePath, hash: `#${hash}` }} className="nav-dropdown-item" onClick={closeAll} role="menuitem">{label}</Link>
+                      )}
+                    </li>
+                  );
+                })}
+                {SHOW_PAST_EVENTS && (
+                  <li role="none">
+                    <Link to={isVsaPA ? "/vsa-pa-past-events" : isShredvets ? "/shredvets-past-events" : "/past-events"} className="nav-dropdown-item" onClick={closeAll} role="menuitem">Past Events</Link>
+                  </li>
+                )}
+                {isAuthenticated() && (
+                  <>
+                    <li role="none">
+                      <Link to={isVsaPA ? "/vsa-pa-training" : "/training"} className="nav-dropdown-item" onClick={closeAll} role="menuitem">Training</Link>
+                    </li>
+                    <li role="none">
+                      <Link to={isVsaPA ? "/vsa-pa-meetings" : "/meetings"} className="nav-dropdown-item" onClick={closeAll} role="menuitem">Organizational Meetings</Link>
+                    </li>
+                    <li role="none">
+                      <Link to="/leadership" className="nav-dropdown-item" onClick={closeAll} role="menuitem">Leadership</Link>
+                    </li>
+                    <li role="none">
+                      <Link to="/gallery" className="nav-dropdown-item" onClick={closeAll} role="menuitem">Media</Link>
+                    </li>
+                  </>
+                )}
+                <li role="none">
+                  <Link to="/membership" className="nav-dropdown-item" onClick={closeAll} role="menuitem">Membership</Link>
+                </li>
+              </ul>
+            )}
+          </div>
 
           <div className="nav-dropdown">
             <button
@@ -125,7 +205,7 @@ function Nav() {
               aria-expanded={otherSitesOpen}
               aria-haspopup="true"
             >
-              Other sites
+              Our Community
               <span className="nav-dropdown-chevron">▼</span>
             </button>
             {otherSitesOpen && (
@@ -199,112 +279,6 @@ function Nav() {
             )}
           </div>
         </div>
-      </div>
-
-      {/* Hamburger menu panel */}
-      <div className={`nav-menu-panel ${menuOpen ? "active" : ""}`}>
-        <ul className="nav-menu-links">
-          <li>
-            {isOnSectionedPage && isCurrentPage ? (
-              <a
-                href={anchorHref("home")}
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleAnchorClick(e, "#home");
-                }}
-              >
-                Home
-              </a>
-            ) : (
-              <Link to={anchorHref("home")} onClick={closeAll}>
-                Home
-              </Link>
-            )}
-          </li>
-          {MAIN_NAV_LINKS.filter((l) => l.href !== "#home").map(({ href, label }) => {
-            const hash = href.slice(1);
-            // Events: anchor when events are on this page (Home, VsaPA, ShredVets); else link to dedicated page
-            const isEventsLink = href === "#events";
-            const eventsOnThisPage = (pathname === "/" || pathname === "/vsa-pa") && isCurrentPage || (isShredvets && isCurrentPage);
-            const eventsTo = isVsaPA ? "/vsa-pa-events" : isShredvets ? { pathname: "/shredvets", hash: "#events" } : "/events";
-            if (isEventsLink) {
-              return (
-                <li key={href}>
-                  {eventsOnThisPage ? (
-                    <a href={anchorHref(hash)} onClick={(e) => { e.preventDefault(); handleAnchorClick(e, href); }}>
-                      {label}
-                    </a>
-                  ) : (
-                    <Link to={eventsTo} onClick={closeAll}>{label}</Link>
-                  )}
-                </li>
-              );
-            }
-            // About, Programs, News: dedicated pages when not on home; anchor when on home
-            const sectionPageRoutes = { "#about": "/about", "#programs": "/programs", "#news": "/news" };
-            const sectionPage = sectionPageRoutes[href];
-            const onHome = pathname === "/" && isCurrentPage;
-            if (sectionPage && !onHome) {
-              return (
-                <li key={href}>
-                  <Link to={sectionPage} onClick={closeAll}>{label}</Link>
-                </li>
-              );
-            }
-            return (
-              <li key={href}>
-                {isOnSectionedPage && isCurrentPage ? (
-                  <a
-                    href={anchorHref(hash)}
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAnchorClick(e, href);
-                    }}
-                  >
-                    {label}
-                  </a>
-                ) : (
-                  <Link to={{ pathname: basePath, hash: `#${hash}` }} onClick={closeAll}>
-                    {label}
-                  </Link>
-                )}
-              </li>
-            );
-          })}
-          <li>
-            <Link
-              to={isVsaPA ? "/vsa-pa-past-events" : isShredvets ? "/shredvets-past-events" : "/past-events"}
-              onClick={closeAll}
-            >
-              Past Events
-            </Link>
-          </li>
-          <li>
-            <Link to={isVsaPA ? "/vsa-pa-training" : "/training"} onClick={closeAll}>
-              Training
-            </Link>
-          </li>
-          <li>
-            <Link to={isVsaPA ? "/vsa-pa-meetings" : "/meetings"} onClick={closeAll}>
-              Organizational Meetings
-            </Link>
-          </li>
-          <li>
-            <Link to="/leadership" onClick={closeAll}>
-              Leadership
-            </Link>
-          </li>
-          <li>
-            <Link to="/gallery" onClick={closeAll}>
-              Media
-            </Link>
-          </li>
-          <li>
-            <Link to="/membership" onClick={closeAll}>
-              Membership
-            </Link>
-          </li>
-        </ul>
       </div>
     </nav>
   );

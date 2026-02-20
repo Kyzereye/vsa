@@ -1,5 +1,3 @@
-import { Link } from "react-router-dom";
-
 const ABOUT_PARAGRAPHS = [
   "The Veterans Sportsmens Association (VSA) is composed of Veterans and Civilians alike who take pride in honoring All Veterans for their service and sacrifices.",
   "The Veterans Sportsmens Association (VSA) is a Federally recognized 501c3 Non-profit Organization, and we are located in Poughkeepsie, New York.",
@@ -58,13 +56,6 @@ function About({ teaser = false }) {
             {paragraphs.map((text, i) => (
               <p key={i}>{text}</p>
             ))}
-            {teaser && (
-              <p style={{ marginTop: "1rem" }}>
-                <Link to="/about" className="cta-button" style={{ background: "var(--dark-gray)" }}>
-                  Read full story
-                </Link>
-              </p>
-            )}
           </div>
         </div>
       </section>

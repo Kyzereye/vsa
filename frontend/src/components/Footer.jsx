@@ -1,4 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const FOOTER_LINKS = [
   { href: "#home", label: "Home" },
@@ -9,11 +10,15 @@ const FOOTER_LINKS = [
   { href: "#contact", label: "Contact" },
 ];
 
+const PUBLIC_FOOTER_HREFS = new Set(["#home", "#about", "#events", "#programs"]);
+
 function Footer() {
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
   const pathname = location.pathname;
   const isShredVetsPage = pathname === "/shredvets";
   const isVsaPA = pathname.startsWith("/vsa-pa");
+  const publicOnly = !isAuthenticated();
 
   const handleAnchorClick = (e, href) => {
     e.preventDefault();
@@ -25,19 +30,21 @@ function Footer() {
   const eventsLink = isVsaPA ? "/vsa-pa-events" : isShredVetsPage ? "/shredvets#events" : "/events";
   const sectionPageRoutes = { "#about": "/about", "#programs": "/programs", "#news": "/news", "#gallery": "/gallery" };
 
+  const linksToShow = publicOnly ? FOOTER_LINKS.filter(({ href }) => PUBLIC_FOOTER_HREFS.has(href)) : FOOTER_LINKS;
+
   return (
     <footer className="footer">
       <div className="footer-content">
         <p>&copy; {new Date().getFullYear()} by the Veterans Sportsmens Association.</p>
         <div className="footer-links">
-          {isShredVetsPage ? (
+          {isShredVetsPage && !publicOnly ? (
             <>
               <Link to="/">Home</Link>
               <Link to="/shredvets">ShredVets</Link>
             </>
           ) : (
             <>
-              {FOOTER_LINKS.map(({ href, label }) => {
+              {linksToShow.map(({ href, label }) => {
                 if (href === "#events") {
                   return eventsOnThisPage ? (
                     <a key={href} href="#events" onClick={(e) => handleAnchorClick(e, "#events")}>Events</a>
@@ -54,8 +61,14 @@ function Footer() {
                   </a>
                 );
               })}
-              <Link to="/leadership">Leadership</Link>
-              <Link to="/shredvets">ShredVets</Link>
+              <Link to="/gallery">Gallery</Link>
+              {!publicOnly && (
+                <>
+                  <Link to="/leadership">Leadership</Link>
+                  <Link to="/shredvets">ShredVets</Link>
+                </>
+              )}
+              <Link to="/membership">Membership</Link>
             </>
           )}
         </div>

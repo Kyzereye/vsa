@@ -4,6 +4,7 @@ import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import { fetchEvents } from "../api";
 import { formatEventDateDisplay } from "../utils/date";
+import { SHOW_PAST_EVENTS } from "../config";
 
 function PastEvents({ eventType = "vsa" }) {
   const [events, setEvents] = useState([]);
@@ -24,6 +25,10 @@ function PastEvents({ eventType = "vsa" }) {
     "Back to VSA Events";
 
   useEffect(() => {
+    if (!SHOW_PAST_EVENTS) {
+      setLoading(false);
+      return;
+    }
     fetchEvents(eventType, { past: true })
       .then(setEvents)
       .catch((err) => setError(err.message))
@@ -48,7 +53,9 @@ function PastEvents({ eventType = "vsa" }) {
 
         <section id="events">
           <div className="container">
-            {loading ? (
+            {!SHOW_PAST_EVENTS ? (
+              <p style={{ textAlign: "center", color: "var(--text-gray)" }}>Past events are not currently displayed.</p>
+            ) : loading ? (
               <p style={{ textAlign: "center", color: "var(--text-gray)" }}>Loading past events...</p>
             ) : error ? (
               <p style={{ textAlign: "center", color: "var(--primary-red)" }}>{error}</p>

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { fetchEvents, fetchMyRegistrations } from "../api";
 import { useAuth } from "../contexts/AuthContext";
 import { formatEventDateDisplay } from "../utils/date";
+import { SHOW_PAST_EVENTS } from "../config";
 
 function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming Events", pastEventsLink, pastEventsLabel }) {
   const { token } = useAuth();
@@ -98,7 +99,7 @@ function Events({ onRegisterClick, eventType = "vsa", sectionTitle = "Upcoming E
             );
           })}
         </div>
-        {pastEventsLink && (
+        {SHOW_PAST_EVENTS && pastEventsLink && (
           <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
             <Link to={pastEventsLink} className="cta-button" style={{ background: "var(--dark-gray)" }}>
               {pastEventsLabel ?? "View past events"}

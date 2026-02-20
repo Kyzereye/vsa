@@ -5,6 +5,7 @@ import Footer from "../../components/Footer";
 import { fetchEvents, fetchMyRegistrations } from "../../api";
 import { formatEventDateDisplay } from "../../utils/date";
 import { useAuth } from "../../contexts/AuthContext";
+import { SHOW_PAST_EVENTS } from "../../config";
 
 /**
  * Shared events page used by both NY (/events) and PA (/vsa-pa-events).
@@ -93,7 +94,7 @@ function EventsPage({ eventType, title, subtitle, backTo, backLabel, pastEventsL
                     );
                   })}
                 </div>
-                {pastEventsLink && pastEventsLabel && (
+                {SHOW_PAST_EVENTS && pastEventsLink && pastEventsLabel && (
                   <p style={{ textAlign: "center", marginTop: "1.5rem" }}>
                     <Link to={pastEventsLink} className="cta-button" style={{ background: "var(--dark-gray)" }}>
                       {pastEventsLabel}

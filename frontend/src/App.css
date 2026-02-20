@@ -108,6 +108,10 @@
   right: 0;
 }
 
+.nav-dropdown-panel-menu {
+  min-width: 220px;
+}
+
 .nav-dropdown-item {
   display: block;
   width: 100%;
@@ -237,6 +241,20 @@ section {
 #news,
 #contact {
   scroll-margin-top: 4rem;
+}
+
+/* Home page section backgrounds: alternating white / gray */
+#events {
+  background: var(--white);
+}
+#about {
+  background: var(--light-gray);
+}
+#programs {
+  background: var(--white);
+}
+#news {
+  background: var(--light-gray);
 }
 
 .section-title {
@@ -534,6 +552,39 @@ section {
 .leadership-slot-name {
   color: var(--dark-gray);
   font-weight: 500;
+}
+
+/* Bylaws section on Leadership page */
+.bylaws-content {
+  max-width: 720px;
+  margin: 1.5rem auto 0;
+  text-align: left;
+}
+
+.bylaws-article {
+  margin-bottom: 2rem;
+}
+
+.bylaws-article:last-child {
+  margin-bottom: 0;
+}
+
+.bylaws-article-title {
+  margin: 0 0 0.75rem;
+  font-size: 1.1rem;
+  color: var(--primary-blue);
+  font-weight: 600;
+}
+
+.bylaws-section {
+  margin: 0 0 0.5rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--dark-gray);
+}
+
+.bylaws-section:last-child {
+  margin-bottom: 0;
 }
 
 /* Organizational meetings list */

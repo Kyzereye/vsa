@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import Nav from "../components/Nav";
 import Footer from "../components/Footer";
 import { fetchBoardMembers } from "../api";
+import { bylaws } from "../data/bylaws";
 
 const EXEC_LABELS = ["President", "Vice President", "Financial Secretary"];
 const BOARD_COUNT = 6;
@@ -100,6 +101,22 @@ export default function Leadership() {
                 </div>
               </div>
             )}
+          </div>
+        </section>
+
+        <section id="bylaws">
+          <div className="container">
+            <h2 className="section-title">Bylaws</h2>
+            <div className="bylaws-content">
+              {bylaws.map(({ article, title, sections }) => (
+                <article key={article} className="bylaws-article">
+                  <h3 className="bylaws-article-title">Article {article}. {title}</h3>
+                  {sections.map((paragraph, i) => (
+                    <p key={i} className="bylaws-section">{paragraph}</p>
+                  ))}
+                </article>
+              ))}
+            </div>
           </div>
         </section>
       </main>

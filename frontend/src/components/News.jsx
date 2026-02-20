@@ -19,7 +19,7 @@ function News({ limit }) {
 
   if (loading) {
     return (
-      <section id="news" style={{ background: "var(--light-gray)" }}>
+      <section id="news">
         <div className="container">
           <h2 className="section-title">Latest News</h2>
           <p style={{ textAlign: "center", color: "var(--text-gray)" }}>Loading news...</p>
@@ -30,7 +30,7 @@ function News({ limit }) {
 
   if (error) {
     return (
-      <section id="news" style={{ background: "var(--light-gray)" }}>
+      <section id="news">
         <div className="container">
           <h2 className="section-title">Latest News</h2>
           <p style={{ textAlign: "center", color: "var(--primary-red)" }}>{error}</p>
@@ -40,7 +40,7 @@ function News({ limit }) {
   }
 
   return (
-    <section id="news" style={{ background: "var(--light-gray)" }}>
+    <section id="news">
       <div className="container">
         <h2 className="section-title">Latest News</h2>
         <div className="card-grid">

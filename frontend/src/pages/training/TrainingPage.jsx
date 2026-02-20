@@ -4,6 +4,7 @@ import Nav from "../../components/Nav";
 import Footer from "../../components/Footer";
 import { fetchEvents } from "../../api";
 import { formatEventDateDisplay } from "../../utils/date";
+import { SHOW_PAST_TRAINING } from "../../config";
 
 function formatPastTrainingDate(dateStr) {
   if (!dateStr) return "";
@@ -37,6 +38,10 @@ function TrainingPage({ eventType, title, subtitle, backTo, backLabel }) {
   }, [eventType]);
 
   useEffect(() => {
+    if (!SHOW_PAST_TRAINING) {
+      setLoadingPast(false);
+      return;
+    }
     fetchEvents(eventType, { past: true })
       .then(setPast)
       .catch((err) => setErrorPast(err.message))
@@ -100,28 +105,30 @@ function TrainingPage({ eventType, title, subtitle, backTo, backLabel }) {
           </div>
         </section>
 
-        <section id="training-past">
-          <div className="container">
-            <h2 className="section-title">Past training classes</h2>
-            {loadingPast ? (
-              <p style={{ textAlign: "center", color: "var(--text-gray)" }}>Loading…</p>
-            ) : errorPast ? (
-              <p style={{ textAlign: "center", color: "var(--primary-red)" }}>{errorPast}</p>
-            ) : past.length === 0 ? (
-              <p style={{ textAlign: "center", color: "var(--text-gray)" }}>No past training on record.</p>
-            ) : (
-              <ul className="training-past-list">
-                {past.map(({ id, date, title: eventTitle, canceled }) => (
-                  <li key={id} className="training-past-item">
-                    <span className="training-past-title">{eventTitle}</span>
-                    {canceled && <span className="event-status-badge event-status-canceled" style={{ marginLeft: "0.5rem" }}>Canceled</span>}
-                    <span className="training-past-date"> — {formatPastTrainingDate(date)}</span>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </section>
+        {SHOW_PAST_TRAINING && (
+          <section id="training-past">
+            <div className="container">
+              <h2 className="section-title">Past training classes</h2>
+              {loadingPast ? (
+                <p style={{ textAlign: "center", color: "var(--text-gray)" }}>Loading…</p>
+              ) : errorPast ? (
+                <p style={{ textAlign: "center", color: "var(--primary-red)" }}>{errorPast}</p>
+              ) : past.length === 0 ? (
+                <p style={{ textAlign: "center", color: "var(--text-gray)" }}>No past training on record.</p>
+              ) : (
+                <ul className="training-past-list">
+                  {past.map(({ id, date, title: eventTitle, canceled }) => (
+                    <li key={id} className="training-past-item">
+                      <span className="training-past-title">{eventTitle}</span>
+                      {canceled && <span className="event-status-badge event-status-canceled" style={{ marginLeft: "0.5rem" }}>Canceled</span>}
+                      <span className="training-past-date"> — {formatPastTrainingDate(date)}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </section>
+        )}
       </main>
       <Footer />
     </>

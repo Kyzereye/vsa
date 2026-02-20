@@ -19,7 +19,7 @@ function Programs({ limit }) {
 
   if (loading) {
     return (
-      <section id="programs" style={{ background: "var(--light-gray)" }}>
+      <section id="programs">
         <div className="container">
           <h2 className="section-title">Our Programs</h2>
           <p style={{ textAlign: "center", color: "var(--text-gray)" }}>Loading programs...</p>
@@ -30,7 +30,7 @@ function Programs({ limit }) {
 
   if (error) {
     return (
-      <section id="programs" style={{ background: "var(--light-gray)" }}>
+      <section id="programs">
         <div className="container">
           <h2 className="section-title">Our Programs</h2>
           <p style={{ textAlign: "center", color: "var(--primary-red)" }}>{error}</p>
@@ -40,7 +40,7 @@ function Programs({ limit }) {
   }
 
   return (
-    <section id="programs" style={{ background: "var(--light-gray)" }}>
+    <section id="programs">
       <div className="container">
         <h2 className="section-title">Our Programs</h2>
         <div className="card-grid">

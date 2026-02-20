@@ -11,9 +11,11 @@ import {
   Contact,
   Footer,
 } from "../components";
+import { useAuth } from "../contexts/AuthContext";
 
 function Home() {
   const location = useLocation();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     if (location.hash) {
@@ -36,7 +38,7 @@ function Home() {
         <Events pastEventsLink="/past-events" pastEventsLabel="View past VSA events" />
         <About teaser />
         <Programs limit={2} />
-        <News limit={2} />
+        {isAuthenticated() && <News limit={2} />}
         <Gallery limit={6} />
         <Contact />
       </main>
