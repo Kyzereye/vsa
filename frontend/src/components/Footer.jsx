@@ -16,7 +16,6 @@ function Footer() {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const pathname = location.pathname;
-  const isShredVetsPage = pathname === "/shredvets";
   const isVsaPA = pathname.startsWith("/vsa-pa");
   const publicOnly = !isAuthenticated();
 
@@ -26,8 +25,8 @@ function Footer() {
   };
 
   const onHome = pathname === "/";
-  const eventsOnThisPage = onHome || pathname === "/vsa-pa" || isShredVetsPage;
-  const eventsLink = isVsaPA ? "/vsa-pa-events" : isShredVetsPage ? "/shredvets#events" : "/events";
+  const eventsOnThisPage = onHome || pathname === "/vsa-pa";
+  const eventsLink = isVsaPA ? "/vsa-pa-events" : "/events";
   const sectionPageRoutes = { "#about": "/about", "#programs": "/programs", "#news": "/news", "#gallery": "/gallery" };
 
   const linksToShow = publicOnly ? FOOTER_LINKS.filter(({ href }) => PUBLIC_FOOTER_HREFS.has(href)) : FOOTER_LINKS;
@@ -37,40 +36,26 @@ function Footer() {
       <div className="footer-content">
         <p>&copy; {new Date().getFullYear()} by the Veterans Sportsmens Association.</p>
         <div className="footer-links">
-          {isShredVetsPage && !publicOnly ? (
-            <>
-              <Link to="/">Home</Link>
-              <Link to="/shredvets">ShredVets</Link>
-            </>
-          ) : (
-            <>
-              {linksToShow.map(({ href, label }) => {
-                if (href === "#events") {
-                  return eventsOnThisPage ? (
-                    <a key={href} href="#events" onClick={(e) => handleAnchorClick(e, "#events")}>Events</a>
-                  ) : (
-                    <Link key={href} to={eventsLink}>Events</Link>
-                  );
-                }
-                if (sectionPageRoutes[href] && !onHome) {
-                  return <Link key={href} to={sectionPageRoutes[href]}>{label}</Link>;
-                }
-                return (
-                  <a key={href} href={href} onClick={(e) => handleAnchorClick(e, href)}>
-                    {label}
-                  </a>
-                );
-              })}
-              <Link to="/gallery">Gallery</Link>
-              {!publicOnly && (
-                <>
-                  <Link to="/leadership">Leadership</Link>
-                  <Link to="/shredvets">ShredVets</Link>
-                </>
-              )}
-              <Link to="/membership">Membership</Link>
-            </>
-          )}
+          {linksToShow.map(({ href, label }) => {
+            if (href === "#events") {
+              return eventsOnThisPage ? (
+                <a key={href} href="#events" onClick={(e) => handleAnchorClick(e, "#events")}>Events</a>
+              ) : (
+                <Link key={href} to={eventsLink}>Events</Link>
+              );
+            }
+            if (sectionPageRoutes[href] && !onHome) {
+              return <Link key={href} to={sectionPageRoutes[href]}>{label}</Link>;
+            }
+            return (
+              <a key={href} href={href} onClick={(e) => handleAnchorClick(e, href)}>
+                {label}
+              </a>
+            );
+          })}
+          <Link to="/gallery">Gallery</Link>
+          {!publicOnly && <Link to="/leadership">Leadership</Link>}
+          <Link to="/membership">Membership</Link>
         </div>
         <p className="footer-tagline">Veterans Serving Veterans</p>
       </div>

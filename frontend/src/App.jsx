@@ -1,5 +1,5 @@
 import { Routes, Route } from "react-router-dom";
-import { Home, AboutPage, ProgramsPage, NewsPage, GalleryPage, ShredVets, VsaPA, VsaPATraining, VsaPAMeetings, EventDetail, Events, VsaPAEvents, PastEvents, Admin, Login, Register, Profile, VerifyEmail, ForgotPassword, ResetPassword, Meetings, Membership, Training, MeetInstructors, Leadership } from "./pages";
+import { Home, AboutPage, ProgramsPage, NewsPage, GalleryPage, VsaPA, VsaPATraining, VsaPAMeetings, EventDetail, Events, VsaPAEvents, PastEvents, Admin, Login, Register, Profile, VerifyEmail, ForgotPassword, ResetPassword, Meetings, Membership, Training, MeetInstructors, Leadership } from "./pages";
 import { ScrollToTop, ProtectedRoute } from "./components";
 import "./App.css";
 
@@ -14,12 +14,10 @@ function App() {
         <Route path="/gallery" element={<GalleryPage />} />
         <Route path="/events" element={<Events />} />
         <Route path="/past-events" element={<PastEvents eventType="vsa" />} />
-        <Route path="/shredvets-past-events" element={<PastEvents eventType="shredvets" />} />
         <Route path="/vsa-pa-past-events" element={<PastEvents eventType="vsaPA" />} />
         <Route path="/events/:slug" element={<EventDetail />} />
         <Route path="/membership" element={<Membership />} />
         <Route path="/news" element={<ProtectedRoute><NewsPage /></ProtectedRoute>} />
-        <Route path="/shredvets" element={<ProtectedRoute><ShredVets /></ProtectedRoute>} />
         <Route path="/vsa-pa" element={<ProtectedRoute><VsaPA /></ProtectedRoute>} />
         <Route path="/vsa-pa-events" element={<ProtectedRoute><VsaPAEvents /></ProtectedRoute>} />
         <Route path="/vsa-pa-training" element={<ProtectedRoute><VsaPATraining /></ProtectedRoute>} />

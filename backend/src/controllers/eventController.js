@@ -70,12 +70,9 @@ export const getEvents = async (req, res) => {
     const conditions = [];
 
     if (eventType === "vsa" || eventType === "vsaNY") {
-      conditions.push("event_type IN ('vsaNY', 'shredvets')");
+      conditions.push("event_type = 'vsaNY'");
     } else if (eventType === "vsaPA") {
       conditions.push("event_type = 'vsaPA'");
-    } else if (eventType === "shredvets") {
-      conditions.push("event_type = ?");
-      params.push(eventType);
     } else if (eventType === "trainingNY" || eventType === "training") {
       conditions.push("event_type = 'trainingNY'");
     } else if (eventType === "orgNY" || eventType === "org") {
@@ -185,7 +182,7 @@ export const createEvent = async (req, res) => {
       return res.status(400).json({ message: "Date, title, and location are required" });
     }
 
-    const allowed = ["vsaNY", "vsaPA", "shredvets", "trainingNY", "trainingPA", "orgNY", "orgPA"];
+    const allowed = ["vsaNY", "vsaPA", "trainingNY", "trainingPA", "orgNY", "orgPA"];
     const event_type = allowed.includes(eventType) ? eventType : "vsaNY";
     const dateVal = String(date).trim().match(/^\d{4}-\d{2}-\d{2}/) ? `${date.replace(/T.*$/, "")} 00:00:00` : date;
     const instructor_id = instructorId != null && instructorId !== "" ? parseInt(instructorId, 10) : null;
@@ -263,7 +260,7 @@ export const updateEvent = async (req, res) => {
       values.push(slug || null);
     }
     if (eventType !== undefined) {
-      const allowed = ["vsaNY", "vsaPA", "shredvets", "trainingNY", "trainingPA", "orgNY", "orgPA"];
+      const allowed = ["vsaNY", "vsaPA", "trainingNY", "trainingPA", "orgNY", "orgPA"];
       updates.push("event_type = ?");
       values.push(allowed.includes(eventType) ? eventType : "vsaNY");
     }

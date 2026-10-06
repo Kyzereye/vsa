@@ -176,7 +176,6 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
               >
                 <option value="vsaNY">VSA NY (home page)</option>
                 <option value="vsaPA">VSA PA</option>
-                <option value="shredvets">ShredVets</option>
                 <option value="trainingNY">Training NY</option>
                 <option value="trainingPA">Training PA</option>
                 <option value="orgNY">Org meeting NY</option>
@@ -294,7 +293,6 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                       >
                         <option value="vsaNY">VSA NY</option>
                         <option value="vsaPA">VSA PA</option>
-                        <option value="shredvets">ShredVets</option>
                         <option value="trainingNY">Training NY</option>
                         <option value="trainingPA">Training PA</option>
                         <option value="orgNY">Org NY</option>
@@ -365,7 +363,7 @@ function AdminEvents({ events = [], onUpdate, onAdd, onDelete }) {
                       )}
                     </td>
                     <td>
-                      {({ vsaNY: "VSA NY", vsaPA: "VSA PA", shredvets: "ShredVets", trainingNY: "Training NY", trainingPA: "Training PA", orgNY: "Org NY", orgPA: "Org PA" }[event.eventType || event.status] || "VSA NY")}
+                      {({ vsaNY: "VSA NY", vsaPA: "VSA PA", trainingNY: "Training NY", trainingPA: "Training PA", orgNY: "Org NY", orgPA: "Org PA" }[event.eventType || event.status] || "VSA NY")}
                     </td>
                     <td>
                       {event.canceled && (

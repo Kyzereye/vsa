@@ -100,14 +100,14 @@ function AdminPrograms({ programs, onUpdate, onAdd, onDelete }) {
               />
             </div>
             <div>
-              <label>Internal Link (e.g., /shredvets)</label>
+              <label>Internal Link (e.g., /programs)</label>
               <input
                 type="text"
                 name="link"
                 value={formData.link}
                 onChange={handleChange}
                 className="admin-input"
-                placeholder="/shredvets"
+                placeholder="/programs"
               />
             </div>
             <div>

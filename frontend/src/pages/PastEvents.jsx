@@ -12,15 +12,12 @@ function PastEvents({ eventType = "vsa" }) {
   const [error, setError] = useState(null);
 
   const title =
-    eventType === "shredvets" ? "Past ShredVets Events" :
     eventType === "vsaPA" ? "Past VSA-PA Events" :
     "Past VSA Events";
   const backLink =
-    eventType === "shredvets" ? "/shredvets" :
     eventType === "vsaPA" ? "/vsa-pa-events" :
     "/events";
   const backLinkText =
-    eventType === "shredvets" ? "Back to ShredVets" :
     eventType === "vsaPA" ? "Back to VSA-PA Events" :
     "Back to VSA Events";
 

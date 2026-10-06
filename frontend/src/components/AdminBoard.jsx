@@ -108,7 +108,7 @@ function AdminBoard({ boardMembers = [], onAdd, onUpdate, onRemove }) {
       </div>
 
       <p style={{ color: "var(--text-gray)", marginBottom: "1rem", fontSize: "0.9rem" }}>
-        Executive Committee (3), then 6 Board Members, then 9 Advisors to the Board. Assign a name to each slot or leave empty.
+        Executive Committee (3), then Board Members (6), then Advisors to the Board (9). Assign a name to each slot or leave empty.
       </p>
 
       {(assigningSlot != null || editingId != null) && (

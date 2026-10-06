@@ -5,7 +5,7 @@ function Events() {
     <EventsPage
       eventType="vsa"
       title="Events"
-      subtitle="Upcoming VSA events — NY, ShredVets, and more"
+      subtitle="Upcoming VSA events — NY and more"
       backTo="/"
       backLabel="Back to VSA Home"
       pastEventsLink="/past-events"

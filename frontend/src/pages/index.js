@@ -3,7 +3,6 @@ export { default as AboutPage } from "./AboutPage";
 export { default as ProgramsPage } from "./ProgramsPage";
 export { default as NewsPage } from "./NewsPage";
 export { default as GalleryPage } from "./GalleryPage";
-export { default as ShredVets } from "./ShredVets";
 export { default as VsaPA } from "./VsaPA";
 export { default as VsaPATraining } from "./training/trainingPA";
 export { default as VsaPAMeetings } from "./meetings/meetingsPA";

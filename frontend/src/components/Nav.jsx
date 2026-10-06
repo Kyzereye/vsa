@@ -17,8 +17,6 @@ const PUBLIC_NAV_HREFS = new Set(["#home", "#about", "#events", "#programs"]);
 const OTHER_SITES = [
   { path: "/", label: "VSA - NY" },
   { path: "/vsa-pa", label: "VSA - PA" },
-  { path: "/shredvets", label: "ShredVets" },
-  // Add more sites here as needed, e.g. { path: "/other", label: "Other Site" },
 ];
 
 function Nav() {
@@ -33,10 +31,9 @@ function Nav() {
   const pathname = location.pathname;
   const isHome = pathname === "/";
   const isVsaPA = pathname.startsWith("/vsa-pa");
-  const isShredvets = pathname === "/shredvets";
-  const basePath = isVsaPA ? "/vsa-pa" : isShredvets ? "/shredvets" : "/";
+  const basePath = isVsaPA ? "/vsa-pa" : "/";
   const logoTo = basePath;
-  const isOnSectionedPage = isHome || pathname === "/vsa-pa" || isShredvets;
+  const isOnSectionedPage = isHome || pathname === "/vsa-pa";
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 50);
@@ -109,7 +106,7 @@ function Nav() {
     >
       <div className="nav-container">
         <Link to={logoTo} className="nav-logo" onClick={closeAll}>
-          {isVsaPA ? "VSA - PA" : isShredvets ? "VSA" : "VSA - NY"}
+          {isVsaPA ? "VSA - PA" : "VSA - NY"}
         </Link>
 
         <div className="nav-right">
@@ -136,8 +133,8 @@ function Nav() {
                 {(isAuthenticated() ? MAIN_NAV_LINKS.filter((l) => l.href !== "#home") : MAIN_NAV_LINKS.filter((l) => PUBLIC_NAV_HREFS.has(l.href) && l.href !== "#home")).map(({ href, label }) => {
                   const hash = href.slice(1);
                   const isEventsLink = href === "#events";
-                  const eventsOnThisPage = (pathname === "/" || pathname === "/vsa-pa") && isCurrentPage || (isShredvets && isCurrentPage);
-                  const eventsTo = isVsaPA ? "/vsa-pa-events" : isShredvets ? { pathname: "/shredvets", hash: "#events" } : "/events";
+                  const eventsOnThisPage = (pathname === "/" || pathname === "/vsa-pa") && isCurrentPage;
+                  const eventsTo = isVsaPA ? "/vsa-pa-events" : "/events";
                   if (isEventsLink) {
                     return (
                       <li key={href} role="none">
@@ -171,7 +168,7 @@ function Nav() {
                 })}
                 {SHOW_PAST_EVENTS && (
                   <li role="none">
-                    <Link to={isVsaPA ? "/vsa-pa-past-events" : isShredvets ? "/shredvets-past-events" : "/past-events"} className="nav-dropdown-item" onClick={closeAll} role="menuitem">Past Events</Link>
+                    <Link to={isVsaPA ? "/vsa-pa-past-events" : "/past-events"} className="nav-dropdown-item" onClick={closeAll} role="menuitem">Past Events</Link>
                   </li>
                 )}
                 {isAuthenticated() && (
